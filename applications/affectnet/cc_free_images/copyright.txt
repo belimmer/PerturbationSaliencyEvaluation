@@ -1,0 +1,7 @@
+anger_cc = https://pxhere.com/en/photo/1259106
+happy_cc = https://pixabay.com/de/photos/lächeln-glücklich-menschen-spaß-2072907/
+sad_cc = https://pxhere.com/en/photo/1259106
+fear_cc = https://pixabay.com/de/photos/person-mensch-mädchen-kind-augen-1205140/disgust_cc = https://pixabay.com/de/photos/ekel-angewidert-ausdruck-weiblich-15793/
+surprise_cc = https://pixabay.com/de/photos/überraschung-mädchen-emotionen-2527564/
+neutral_cc = https://pxhere.com/en/photo/1422037
+contempt_cc = https://pixabay.com/de/photos/porträt-mädchen-brille-blick-1152472/
