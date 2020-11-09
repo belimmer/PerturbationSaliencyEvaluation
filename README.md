@@ -12,6 +12,6 @@ In addition to creating saliency maps, sanity checks (https://arxiv.org/abs/1810
 # Subfolders
 The repository is split into two subfolders: *applications/affectnet* and *applications/atari*
 
- - applications/affectnet contains an emotion recognition model and the code to generate saliency maps for it 
- - applications/atari contains 3 trained atari agents (Pac-Man, Breakout, and Space Invaders), the code to generate saliency maps for them, and the comparisons metrics (sanity checks and insertion metric)
+ - *applications/affectnet contains* an emotion recognition model and the code to generate saliency maps for it 
+ - *applications/atari* contains 3 trained atari agents (Pac-Man, Breakout, and Space Invaders), the code to generate saliency maps for them, and the comparisons metrics (sanity checks and insertion metric)
 
