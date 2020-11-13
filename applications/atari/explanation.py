@@ -9,15 +9,15 @@ import timeit
 from lime.wrappers.scikit_image import SegmentationAlgorithm
 from skimage.segmentation import mark_boundaries
 
-import main_atari
-import rise
-import greydanus
-import custom_occlusion_sensitvity
-import custom_greydanus
-import custom_lime
+import applications.atari.main_atari as main_atari
+import applications.atari.rise as rise
+import applications.atari.greydanus as greydanus
+import applications.atari.custom_occlusion_sensitvity as custom_occlusion_sensitvity
+import applications.atari.custom_greydanus as custom_greydanus
+import applications.atari.custom_lime as custom_lime
 
 import gym
-from custom_atari_wrapper import atari_wrapper
+from applications.atari.custom_atari_wrapper import atari_wrapper
 
 class explainer():
     """
@@ -95,7 +95,7 @@ class explainer():
             explainer = custom_greydanus.custom_greydanus_explainer()
         return explainer.generate_explanation(input, self.model, radius=r)
 
-    def generate_rise_prediction(self, input, use_softmax, probability=0.9):
+    def generate_rise_prediction(self, input, probability=0.9):
         """
         Generates an explanation using the LIME approach.
 
@@ -115,8 +115,7 @@ class explainer():
         if not self.masks_generated:
             self.rise_masks = explainer.generate_masks(input_size)
             self.masks_generated = True
-        prediction = explainer.explain(self.model, np.expand_dims(input, axis=0), self.rise_masks, input_size,
-                                       use_softmax=use_softmax)
+        prediction = explainer.explain(self.model, np.expand_dims(input, axis=0), self.rise_masks, input_size)
         model_prediction = self.model.predict(np.expand_dims(input, axis=0))
         model_prediction = np.argmax(np.squeeze(model_prediction))
         return prediction[model_prediction]
@@ -162,12 +161,54 @@ def create_lime_image(mask, frames, output_path, shape):
         for y in range(custom_mask.shape[0]):
             for x in range(custom_mask.shape[1]):
                 if custom_mask[y][x] == 1:
-                    copied_frame[y][x][1] = 200
-                    copied_frame[y][x][0] = 150
-                    copied_frame[y][x][2] = 80
+                    copied_frame[y][x][1] = 170
         original_with_boundaries = mark_boundaries(copied_frame, custom_mask.astype("uint8"))
         main_atari.save_frame(original_with_boundaries, output_path, i)
 
+
+def insertion_for_all(_, my_explainer, stacked_frames, model, plot = False):
+    tmp_scores = []
+    saliency_map = my_explainer.generate_occlusion_explanation(input=np.squeeze(stacked_frames),
+                                                               use_softmax=True)
+    insertion = rise.CausalMetric(model=model, mode='ins', step=np.squeeze(stacked_frames).shape[0],
+                                  substrate_fn=rise.custom_blur)
+    score = insertion.single_run(img_tensor=np.squeeze(stacked_frames), explanation=saliency_map,
+                                 name="frame_" + str(_), approach="occl", plot=plot)
+    tmp_scores.append(score)
+
+    saliency_map = my_explainer.generate_greydanus_explanation(input=np.squeeze(stacked_frames), blur=False)
+    score = insertion.single_run(img_tensor=np.squeeze(stacked_frames), explanation=saliency_map,
+                                 name="frame_" + str(_), approach="noise", plot=plot)
+    tmp_scores.append(score)
+
+    saliency_map = my_explainer.generate_greydanus_explanation(input=np.squeeze(stacked_frames), blur=True)
+    score = insertion.single_run(img_tensor=np.squeeze(stacked_frames), explanation=saliency_map,
+                                 name="frame_" + str(_), approach="noise_blur", plot=plot)
+    tmp_scores.append(score)
+
+    explanation, mask, ranked_mask = my_explainer.generate_lime_explanation(rgb_image=False,
+                                                                            input=np.squeeze(
+                                                                                stacked_frames),
+                                                                            hide_img=False,
+                                                                            positive_only=False)
+    # explanation, mask, ranked_mask = my_explainer.generate_lime_explanation(rgb_image=False, input=np.squeeze(stacked_frames),
+    #                                                                             hide_img=False, positive_only=True, num_features=25)
+    score = insertion.single_run(img_tensor=np.squeeze(stacked_frames), explanation=ranked_mask,
+                                 name="frame_" + str(_), approach="lime", plot=plot)
+    tmp_scores.append(score)
+
+    saliency_map = my_explainer.generate_rise_prediction(input=np.squeeze(stacked_frames))
+    score = insertion.single_run(img_tensor=np.squeeze(stacked_frames), explanation=saliency_map,
+                                 name="frame_" + str(_),
+                                 approach="rise", plot=plot)
+    tmp_scores.append(score)
+
+    ####random
+    saliency_map = np.random.random(size=saliency_map.shape)
+    score = insertion.single_run(img_tensor=np.squeeze(stacked_frames), explanation=saliency_map,
+                                 name="frame_" + str(_), approach="noise_blur", plot=plot)
+    tmp_scores.append(score)
+    return tmp_scores
 
 if __name__ == '__main__':
     state_path = "HIGHLIGHTS_states/"
@@ -207,7 +248,7 @@ if __name__ == '__main__':
         wrapper.reset(noop_max=1)
         plot = False
         if fixed_start:
-            wrapper.fixed_reset(1, 0)  # used  action 3 and 4
+            wrapper.fixed_reset(71, 0)  # used  action 3 and 4
 
         for _ in range(steps):
             if _ < 4:
@@ -218,7 +259,8 @@ if __name__ == '__main__':
             else:
                 my_input = np.expand_dims(stacked_frames, axis=0)
                 output = model.predict(
-                    my_input)
+                    my_input)  # this output corresponds with the output in baseline if --dueling=False is correctly set for baselines.
+                # save model predictions
 
                 action = np.argmax(np.squeeze(output))
 
@@ -228,45 +270,9 @@ if __name__ == '__main__':
                     plot = True
                 else:
                     plot = False
-                tmp_scores = []
 
-                saliency_map = my_explainer.generate_occlusion_explanation(input=np.squeeze(stacked_frames),
-                                                                           use_softmax=True)
-                insertion = rise.CausalMetric(model=model, mode='ins', step=np.squeeze(stacked_frames).shape[0],
-                                              substrate_fn=rise.custom_black)
-                score = insertion.single_run(img_tensor=np.squeeze(stacked_frames), explanation=saliency_map,
-                                             name="frame_" + str(_), approach="occl", use_softmax=True, plot=plot)
-                tmp_scores.append(score)
-                occlusion_auc.append(rise.auc(score))
+                tmp_scores = insertion_for_all(_, my_explainer, stacked_frames, model, plot = False)
 
-                saliency_map = my_explainer.generate_greydanus_explanation(input=np.squeeze(stacked_frames), blur=False)
-                score = insertion.single_run(img_tensor=np.squeeze(stacked_frames), explanation=saliency_map,
-                                             name="frame_" + str(_), approach="noise", use_softmax=True, plot=plot)
-                tmp_scores.append(score)
-                greydanus_auc.append(rise.auc(score))
-
-                saliency_map = my_explainer.generate_greydanus_explanation(input=np.squeeze(stacked_frames), blur=True)
-                score = insertion.single_run(img_tensor=np.squeeze(stacked_frames), explanation=saliency_map,
-                                             name="frame_" + str(_), approach="noise_blur", use_softmax=True, plot=plot)
-                tmp_scores.append(score)
-                greydanus_auc_noise.append(rise.auc(score))
-
-                explanation, mask, ranked_mask = my_explainer.generate_lime_explanation(rgb_image=False,
-                                                                                        input=np.squeeze(
-                                                                                            stacked_frames),
-                                                                                        hide_img=False,
-                                                                                        positive_only=False)
-                score = insertion.single_run(img_tensor=np.squeeze(stacked_frames), explanation=ranked_mask,
-                                             name="frame_" + str(_), approach="lime", use_softmax=True, plot=plot)
-                tmp_scores.append(score)
-                lime_auc.append(rise.auc(score))
-
-                saliency_map = my_explainer.generate_rise_prediction(input=np.squeeze(stacked_frames), use_softmax=True)
-                score = insertion.single_run(img_tensor=np.squeeze(stacked_frames), explanation=saliency_map,
-                                             name="frame_" + str(_),
-                                             approach="rise", use_softmax=True, plot=plot)
-                tmp_scores.append(score)
-                rise_auc.append(rise.auc(score))
                 scores.append(tmp_scores)
 
             stacked_frames, observations, reward, done, info = wrapper.step(action)

@@ -2,6 +2,7 @@ from custom_atari_wrapper import atari_wrapper
 from explanation import explainer
 from explanation import create_lime_image
 from explanation import create_saliency_image
+from explanation import insertion_for_all
 import gym
 import keras
 import numpy as np
@@ -65,53 +66,8 @@ if __name__ == '__main__':
                 plot = True
             else:
                 plot = False
-            saliency_map = my_explainer.generate_occlusion_explanation(input=np.squeeze(stacked_frames), use_softmax=True)
-            # create_saliency_image(saliency_map=saliency_map, image=observations[3],
-            #                                        output_path=state_output_path + "occlusion_explanation_" + "frame_" + str(_), cmap="viridis")
-            insertion = rise.CausalMetric(model=model, mode='ins', step=np.squeeze(stacked_frames).shape[0],
-                                                      substrate_fn=rise.custom_blur)
-            score = insertion.single_run(img_tensor=np.squeeze(stacked_frames), explanation=saliency_map, name="frame_" + str(_), approach="occl", plot=plot)
-            tmp_scores.append(score)
-            occlusion_auc.append(rise.auc(score))
 
-            saliency_map = my_explainer.generate_occlusion_explanation(input=np.squeeze(stacked_frames),
-                                                                       use_softmax=True, use_old_confidence=True)
-            score = insertion.single_run(img_tensor=np.squeeze(stacked_frames), explanation=saliency_map,
-                                         name="frame_" + str(_), approach="occl_old_pred", plot=plot)
-            tmp_scores.append(score)
-            occlusion_old_confidence_auc.append(rise.auc(score))
-
-            saliency_map = my_explainer.generate_greydanus_explanation(input=np.squeeze(stacked_frames), blur=False)
-            # create_saliency_image(saliency_map=saliency_map, image=observations[3],
-            #                                       output_path=state_output_path + "greydanus_explanation_" + "frame_" + str(_))
-            score = insertion.single_run(img_tensor=np.squeeze(stacked_frames), explanation=saliency_map, name="frame_" + str(_),
-                                                     approach="noise", plot=plot)
-            tmp_scores.append(score)
-            greydanus_auc.append(rise.auc(score))
-
-            saliency_map = my_explainer.generate_greydanus_explanation(input=np.squeeze(stacked_frames), blur=True)
-            score = insertion.single_run(img_tensor=np.squeeze(stacked_frames), explanation=saliency_map,
-                                         name="frame_" + str(_),
-                                         approach="noise_blur", plot=plot)
-            tmp_scores.append(score)
-            greydanus_auc_noise.append(rise.auc(score))
-
-            explanation, mask, ranked_mask = my_explainer.generate_lime_explanation(rgb_image=False,
-                                                                                            input=np.squeeze(stacked_frames),
-                                                                                            hide_img=False, positive_only=False)
-            # create_lime_image(mask=mask, frames=observations,
-            #                               output_path=state_output_path + "lime_explanation_" + "frame_" + str(_), shape=(160, 210))
-            score = insertion.single_run(img_tensor=np.squeeze(stacked_frames), explanation=ranked_mask, name="frame_" + str(_), approach="lime", plot=plot)
-            tmp_scores.append(score)
-            lime_auc.append(rise.auc(score))
-
-            saliency_map = my_explainer.generate_rise_prediction(input=np.squeeze(stacked_frames))
-            # create_saliency_image(saliency_map=saliency_map, image=observations[3],
-            #                                   output_path=state_output_path + "rise_explanation_" + "frame_" + str(_))
-            score = insertion.single_run(img_tensor=np.squeeze(stacked_frames), explanation=saliency_map, name="frame_" + str(_),
-                                                     approach="rise", plot=plot)
-            tmp_scores.append(score)
-            rise_auc.append(rise.auc(score))
+            tmp_scores = insertion_for_all(_, my_explainer, stacked_frames, model)
             scores.append(tmp_scores)
 
         stacked_frames, observations, reward, done, info = wrapper.step(action)
@@ -134,11 +90,11 @@ if __name__ == '__main__':
     print('Time:')
     print(datetime.datetime.now())
 
-    print("Occlusion average AUC: ")
-    print(sum(occlusion_auc) / len(occlusion_auc))
-    print("LIME average AUC:")
-    print(sum(lime_auc) / len(lime_auc))
-    print("Greydanus average AUC:")
-    print(sum(greydanus_auc) / len(greydanus_auc))
-    print("RISE average AUC:")
-    print(sum(rise_auc) / len(rise_auc))
+    # print("Occlusion average AUC: ")
+    # print(sum(occlusion_auc) / len(occlusion_auc))
+    # print("LIME average AUC:")
+    # print(sum(lime_auc) / len(lime_auc))
+    # print("Greydanus average AUC:")
+    # print(sum(greydanus_auc) / len(greydanus_auc))
+    # print("RISE average AUC:")
+    # print(sum(rise_auc) / len(rise_auc))
