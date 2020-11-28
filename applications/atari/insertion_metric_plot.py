@@ -1,8 +1,12 @@
+'''
+Module for plotting the insertion metric results
+'''
+
 import numpy as np
 import matplotlib.pyplot as plt
 import seaborn as sns
 
-# Normalizing formula from https://arxihttps://arxiv.org/pdf/2001.00396.pdfv.org/pdf/2001.00396.pdf
+# Normalizing formula from https://arxiv.org/pdf/2001.00396.pdf
 # did not use this sicne we wanted to show the confidence range
 def normalize(arr):
     out = []
@@ -19,6 +23,8 @@ approaches = ["Occlusion Sensitivity Original", "Noise Sensitiviy Black", "Noise
 # In case you one only wants to look at certain approaches
 ignored_index = [5]
 
+# the names are "perdictions" for the MsPacman agent, "breakout" for the Breakout agent and "space_invaders" for Space
+# Invaders
 env = "perdictions"
 
 

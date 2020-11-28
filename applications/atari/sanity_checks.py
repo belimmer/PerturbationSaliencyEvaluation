@@ -1,4 +1,9 @@
 '''
+This module builds up on a module in https://github.com/HuTobias/HIGHLIGHTS-LRP
+Date: 2020
+commit: 834bf795ee37a74b611beb79851438e9a8afd676
+License: MIT
+
 This module implements sanity checks for saliency maps.
 To this end the layers in the model are cascadingly randomized and for each step we create a copy of the model.
 Then we create gameplay and saliency map streams for each of those models, using the decisions of the original model,

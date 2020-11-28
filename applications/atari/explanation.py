@@ -167,7 +167,18 @@ def create_lime_image(mask, frames, output_path, shape):
 
 
 def insertion_for_all(_, my_explainer, stacked_frames, model, plot = False):
+    """
+    calculate the insertion metric for all saliency map approaches for the input *stacked_frames*
+    :param _: the frame number, used for naming single plots
+    :param my_explainer: the explainer used to create saliency maps
+    :param stacked_frames: the input frames for the agent
+    :param model: the DQN agent
+    :param plot: set this true to plot intermediate results
+    :return: a list containing the insertion metric scores for each sliency map approach.
+    """
     tmp_scores = []
+
+    # Occlusion Sensitivity
     saliency_map = my_explainer.generate_occlusion_explanation(input=np.squeeze(stacked_frames),
                                                                use_softmax=True)
     insertion = rise.CausalMetric(model=model, mode='ins', step=np.squeeze(stacked_frames).shape[0],
@@ -176,38 +187,41 @@ def insertion_for_all(_, my_explainer, stacked_frames, model, plot = False):
                                  name="frame_" + str(_), approach="occl", plot=plot)
     tmp_scores.append(score)
 
+    # Noise Sensitivity with black occlusion
     saliency_map = my_explainer.generate_greydanus_explanation(input=np.squeeze(stacked_frames), blur=False)
     score = insertion.single_run(img_tensor=np.squeeze(stacked_frames), explanation=saliency_map,
                                  name="frame_" + str(_), approach="noise", plot=plot)
     tmp_scores.append(score)
 
+    # Noise Sensitivity with gaussian noise
     saliency_map = my_explainer.generate_greydanus_explanation(input=np.squeeze(stacked_frames), blur=True)
     score = insertion.single_run(img_tensor=np.squeeze(stacked_frames), explanation=saliency_map,
                                  name="frame_" + str(_), approach="noise_blur", plot=plot)
     tmp_scores.append(score)
 
+    # LIME
     explanation, mask, ranked_mask = my_explainer.generate_lime_explanation(rgb_image=False,
                                                                             input=np.squeeze(
                                                                                 stacked_frames),
                                                                             hide_img=False,
                                                                             positive_only=False)
-    # explanation, mask, ranked_mask = my_explainer.generate_lime_explanation(rgb_image=False, input=np.squeeze(stacked_frames),
-    #                                                                             hide_img=False, positive_only=True, num_features=25)
     score = insertion.single_run(img_tensor=np.squeeze(stacked_frames), explanation=ranked_mask,
                                  name="frame_" + str(_), approach="lime", plot=plot)
     tmp_scores.append(score)
 
+    # RISE
     saliency_map = my_explainer.generate_rise_prediction(input=np.squeeze(stacked_frames))
     score = insertion.single_run(img_tensor=np.squeeze(stacked_frames), explanation=saliency_map,
                                  name="frame_" + str(_),
                                  approach="rise", plot=plot)
     tmp_scores.append(score)
 
-    ####random
+    # Random
     saliency_map = np.random.random(size=saliency_map.shape)
     score = insertion.single_run(img_tensor=np.squeeze(stacked_frames), explanation=saliency_map,
                                  name="frame_" + str(_), approach="noise_blur", plot=plot)
     tmp_scores.append(score)
+
     return tmp_scores
 
 if __name__ == '__main__':

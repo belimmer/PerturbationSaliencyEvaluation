@@ -91,12 +91,3 @@ if __name__ == '__main__':
 
     print('Time:')
     print(datetime.datetime.now())
-
-    # print("Occlusion average AUC: ")
-    # print(sum(occlusion_auc) / len(occlusion_auc))
-    # print("LIME average AUC:")
-    # print(sum(lime_auc) / len(lime_auc))
-    # print("Greydanus average AUC:")
-    # print(sum(greydanus_auc) / len(greydanus_auc))
-    # print("RISE average AUC:")
-    # print(sum(rise_auc) / len(rise_auc))
