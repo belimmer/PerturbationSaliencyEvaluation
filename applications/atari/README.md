@@ -22,7 +22,7 @@ This subfolder contains the code to create saliency maps for three different rei
 Running *`breakout_main.py`* or *`space_invaders_main.py`* will simulate either a breakout or a space invaders game of 1001 steps. A saliency map is created for every frame and used to calculate the insertion metric. The resulting scores are saved in the *`figures/backup_breakout`* or *`figures/backup_space_invaders`* folder. The computed insertion scores can be visualized using *`insertion_metric_plot.py`*.
 
 Running *`explanation.py`* will simulate a Pac-Man game of 1001 steps if the *simulate_game* flag is set to true. Otherwise, saliency maps are created for the game states in the *`HIGHLIGHTS_states`* folder and saved in the *`output_highlight_states`* folder. 
-In both cases the generated saliency maps are used to compute the insertion metric. Resulting graphs for single frames are saved to the corresponding *`figures`* folders. The values of the insertion metric are also saved to the *`backup_predictions`* folder and can be visualized using *`insertion_metric_plot.py`*.
+In both cases, the generated saliency maps are used to compute the insertion metric. Resulting graphs for single frames are saved to the corresponding *`figures`* folders. The values of the insertion metric are also saved to the *`backup_predictions`* folder and can be visualized using *`insertion_metric_plot.py`*.
 
-Running *`sanity_checks.py`* will create sanity check metrics for the Pac-Man model und save the resulting grphs in the *`figures/sanity_checks`* folder.
+Running *`sanity_checks.py`* will create sanity check metrics for the Pac-Man model and save the resulting graphs in the *`figures/sanity_checks`* folder.
 
