@@ -6,8 +6,9 @@ import numpy as np
 import matplotlib.pyplot as plt
 import seaborn as sns
 
+
 # Normalizing formula from https://arxiv.org/pdf/2001.00396.pdf
-# did not use this sicne we wanted to show the confidence range
+# did not use this since we wanted to show the confidence range
 def normalize(arr):
     out = []
     b = arr[0]

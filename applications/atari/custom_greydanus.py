@@ -1,6 +1,13 @@
+"""
+This module was adapted from a module in
+https://github.com/greydanus/visualize_atari
+Date: 2020
+commit: 81c9248543431ec3925b982a9f464128e7135677
+License: MIT
+"""
+
 import numpy as np
 from PIL import Image
-from scipy.special import softmax
 
 
 class custom_greydanus_explainer():
@@ -12,7 +19,7 @@ class custom_greydanus_explainer():
 
     def get_mask(self, center, size):
         """
-        Creates mask to occlude the image
+        Creates a mask to occlude the image
 
         Args:
             center: center position of the mask
@@ -30,7 +37,7 @@ class custom_greydanus_explainer():
 
     def generate_explanation(self, stacked_frames, model, radius):
         """
-        Generates an explanation the prediction of a CNN
+        Generates an explanation for the prediction of a CNN
 
         Args:
             stacked_frames: input of which the prediction will be explained

@@ -1,3 +1,11 @@
+"""
+This module was adapted from a module in
+https://github.com/greydanus/visualize_atari
+Date: 2020
+commit: 81c9248543431ec3925b982a9f464128e7135677
+License: MIT
+"""
+
 from scipy.ndimage.filters import gaussian_filter
 import numpy as np
 from PIL import Image

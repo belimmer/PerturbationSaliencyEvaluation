@@ -38,6 +38,8 @@ if __name__ == '__main__':
     model.layers[idx_of_layer_to_change].activation = keras.activations.linear
     model.save('vgg_face_no_softmax.h5')
 
+    # The no softmax model is needed for the noise sensitivity approach since it uses the outputs of the logit units to
+    # compute the saliency map
     no_softmax_model = keras.models.load_model('vgg_face_no_softmax.h5')
 
     directory = 'cc_free_images'
@@ -110,10 +112,6 @@ if __name__ == '__main__':
         plt.imshow(mark_boundaries(explanation/2 + 0.5, mask))
         plt.savefig(output_directory + "lime_explanation_" + name + ".png")
 
-        # insertion game works with positive explanations only, the code could probably be adjusted to cover
-        # positives and negatives explanations
-        explanation, mask, ranked_mask = my_explainer.generate_lime_explanation(rgb_image=True, input=img,
-                                                                                hide_img=False, positive_only=True)
         score = insertion.single_run(img_tensor=img, explanation=ranked_mask, name=name, approach="lime")
         print("LIME: " + name + " AUC: " + str(rise.auc(score)))
 

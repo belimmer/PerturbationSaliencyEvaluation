@@ -1,3 +1,11 @@
+"""
+This module was adapted from a module in
+https://github.com/eclique/RISE
+Date: 2020
+commit: d91ea006d4bb9b7990347fe97086bdc0f5c1fe10
+License: MIT
+"""
+
 from tqdm import tqdm
 from skimage.transform import resize
 import numpy as np

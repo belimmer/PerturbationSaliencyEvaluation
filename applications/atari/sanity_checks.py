@@ -236,10 +236,6 @@ if __name__ == '__main__':
         env.reset()
         wrapper = atari_wrapper(env)
         wrapper.reset(noop_max=1)
-        env = gym.make('MsPacmanNoFrameskip-v4')
-        env.reset()
-        wrapper = atari_wrapper(env)
-        wrapper.reset(noop_max=1)
         for _ in range(steps):
             if _ < 4:
                 action = env.action_space.sample()

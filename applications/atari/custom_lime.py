@@ -1,3 +1,12 @@
+"""
+This module was adapted from a module in
+https://github.com/marcotcr/lime
+Date: 2020
+commit: 0d1a635f8d9e935c596967caaea32deca8c9099c
+License: BSD 2-Clause "Simplified" License
+"""
+
+
 import numpy as np
 from lime import lime_base
 from functools import partial

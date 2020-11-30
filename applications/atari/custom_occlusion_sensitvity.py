@@ -1,3 +1,12 @@
+"""
+This module was adapted from a module in
+https://github.com/sicara/tf-explain
+Date: 2020
+commit: 8dff129ff7b1012dba2761a61e3c3e68e9ecbec2
+License: MIT
+"""
+
+
 import math
 
 import cv2
@@ -67,6 +76,8 @@ class CustomOcclusionSensitivity:
             image:
             class_index (int): Index of targeted class
             patch_size (int): Size of patch to apply on the image
+            use_softmax (bool): should a softmax be used on the predictions of the model
+            use_old_confidence (bool): compute the saliency map with original_confidence - prediction, or 1 - prediction
 
         Returns:
             np.ndarray: Sensitivity map with shape (H, W, 3)
@@ -137,6 +148,8 @@ def custom_apply_grey_patch(image, top_left_x, top_left_y, patch_size):
         patched_image: image with the added patch
     """
     patched_image = np.array(image, copy=True)
+    # 0.0 is the color the occlusion is done with. In the original paper grey was chosen as default value, but
+    # black seems to work better in some scenarios.
     patched_image[
     top_left_y: top_left_y + patch_size, top_left_x: top_left_x + patch_size, :
     ] = 0.0
