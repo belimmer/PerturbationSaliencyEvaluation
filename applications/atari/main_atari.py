@@ -1,6 +1,6 @@
 import gym
 import matplotlib.pyplot as plt
-from custom_atari_wrapper import atari_wrapper
+from applications.atari.custom_atari_wrapper import atari_wrapper
 import numpy as np
 import keras
 import os
