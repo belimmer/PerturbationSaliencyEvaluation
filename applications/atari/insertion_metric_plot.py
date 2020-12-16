@@ -19,14 +19,14 @@ def normalize(arr):
     return out
 
 
-approaches = ["Occlusion Sensitivity Original", "Noise Sensitiviy Black", "Noise Sensitiviy Blur", "LIME", "RISE", "Random"]
+approaches = ["Occlusion Sensitivity Black", "Occlusion Sensitivity Grey", "Noise Sensitiviy Black", "Noise Sensitiviy Blur", "LIME", "RISE", "Random"]
 # color = ["y","c","r","k","g", "b"] better to use sns colorblind
 # In case you one only wants to look at certain approaches
-ignored_index = [5]
+ignored_index = [6]
 
 # the names are "perdictions" for the MsPacman agent, "breakout" for the Breakout agent and "space_invaders" for Space
 # Invaders
-env = "perdictions"
+env = "frostbite"
 
 
 # needs to be defined here since we need approaches

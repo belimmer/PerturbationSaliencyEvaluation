@@ -28,7 +28,7 @@ class explainer():
         self.rise_masks = []
         self.masks_generated = False
 
-    def generate_occlusion_explanation(self, input, patch_size=5, use_softmax=False, use_old_confidence=False):
+    def generate_occlusion_explanation(self, input, patch_size=5, use_softmax=False, use_old_confidence=False, color=0.0):
         """
         Generates an explanation using the Occlusion Sensitivity approach.
 
@@ -44,7 +44,7 @@ class explainer():
         proposed_action = np.argmax(probabilities)
         explainer = custom_occlusion_sensitvity.CustomOcclusionSensitivity()
         saliency_map = explainer.get_sensitivity_map(image=input, model=self.model, class_index=proposed_action,
-                                                     patch_size=patch_size, use_softmax=use_softmax, use_old_confidence=use_old_confidence)
+                                                     patch_size=patch_size, use_softmax=use_softmax, use_old_confidence=use_old_confidence, color=color)
         return saliency_map
 
     def generate_lime_explanation(self, rgb_image, input, hide_img=True, positive_only=False, num_features=3):
@@ -95,7 +95,7 @@ class explainer():
             explainer = custom_greydanus.custom_greydanus_explainer()
         return explainer.generate_explanation(input, self.model, radius=r)
 
-    def generate_rise_prediction(self, input, probability=0.9):
+    def generate_rise_prediction(self, input, probability=0.9, use_softmax=True):
         """
         Generates an explanation using the LIME approach.
 
@@ -115,7 +115,7 @@ class explainer():
         if not self.masks_generated:
             self.rise_masks = explainer.generate_masks(input_size)
             self.masks_generated = True
-        prediction = explainer.explain(self.model, np.expand_dims(input, axis=0), self.rise_masks, input_size)
+        prediction = explainer.explain(self.model, np.expand_dims(input, axis=0), self.rise_masks, input_size, use_softmax=use_softmax)
         model_prediction = self.model.predict(np.expand_dims(input, axis=0))
         model_prediction = np.argmax(np.squeeze(model_prediction))
         return prediction[model_prediction]
@@ -182,21 +182,28 @@ def insertion_for_all(_, my_explainer, stacked_frames, model, plot = False):
     saliency_map = my_explainer.generate_occlusion_explanation(input=np.squeeze(stacked_frames),
                                                                use_softmax=True)
     insertion = rise.CausalMetric(model=model, mode='ins', step=np.squeeze(stacked_frames).shape[0],
-                                  substrate_fn=rise.custom_blur)
+                                  substrate_fn=rise.custom_black)
     score = insertion.single_run(img_tensor=np.squeeze(stacked_frames), explanation=saliency_map,
-                                 name="frame_" + str(_), approach="occl", plot=plot)
+                                 name="frame_" + str(_), approach="occl", plot=plot, use_softmax=True)
+    tmp_scores.append(score)
+
+    # Occlusion Sensitivity grey
+    saliency_map = my_explainer.generate_occlusion_explanation(input=np.squeeze(stacked_frames),
+                                                               use_softmax=True, color=0.5)
+    score = insertion.single_run(img_tensor=np.squeeze(stacked_frames), explanation=saliency_map,
+                                 name="frame_" + str(_), approach="occl", plot=False, use_softmax=True)
     tmp_scores.append(score)
 
     # Noise Sensitivity with black occlusion
     saliency_map = my_explainer.generate_greydanus_explanation(input=np.squeeze(stacked_frames), blur=False)
     score = insertion.single_run(img_tensor=np.squeeze(stacked_frames), explanation=saliency_map,
-                                 name="frame_" + str(_), approach="noise", plot=plot)
+                                 name="frame_" + str(_), approach="noise", plot=plot, use_softmax=True)
     tmp_scores.append(score)
 
     # Noise Sensitivity with gaussian noise
     saliency_map = my_explainer.generate_greydanus_explanation(input=np.squeeze(stacked_frames), blur=True)
     score = insertion.single_run(img_tensor=np.squeeze(stacked_frames), explanation=saliency_map,
-                                 name="frame_" + str(_), approach="noise_blur", plot=plot)
+                                 name="frame_" + str(_), approach="noise_blur", plot=plot, use_softmax=True)
     tmp_scores.append(score)
 
     # LIME
@@ -206,20 +213,20 @@ def insertion_for_all(_, my_explainer, stacked_frames, model, plot = False):
                                                                             hide_img=False,
                                                                             positive_only=False)
     score = insertion.single_run(img_tensor=np.squeeze(stacked_frames), explanation=ranked_mask,
-                                 name="frame_" + str(_), approach="lime", plot=plot)
+                                 name="frame_" + str(_), approach="lime", plot=plot, use_softmax=True)
     tmp_scores.append(score)
 
     # RISE
     saliency_map = my_explainer.generate_rise_prediction(input=np.squeeze(stacked_frames))
     score = insertion.single_run(img_tensor=np.squeeze(stacked_frames), explanation=saliency_map,
                                  name="frame_" + str(_),
-                                 approach="rise", plot=plot)
+                                 approach="rise", plot=plot, use_softmax=True)
     tmp_scores.append(score)
 
     # Random
     saliency_map = np.random.random(size=saliency_map.shape)
     score = insertion.single_run(img_tensor=np.squeeze(stacked_frames), explanation=saliency_map,
-                                 name="frame_" + str(_), approach="noise_blur", plot=plot)
+                                 name="frame_" + str(_), approach="noise_blur", plot=plot, use_softmax=True)
     tmp_scores.append(score)
 
     return tmp_scores
@@ -262,7 +269,7 @@ if __name__ == '__main__':
         wrapper.reset(noop_max=1)
         plot = False
         if fixed_start:
-            wrapper.fixed_reset(71, 0)  # used  action 3 and 4
+            wrapper.fixed_reset(1, 0)  # used  action 3 and 4
 
         for _ in range(steps):
             if _ < 4:
@@ -300,7 +307,7 @@ if __name__ == '__main__':
 
             if _ % 100 == 0 and _ != 0:
                 print("Saving progress...")
-                np.save(file="figures/backup_perdictions/pred_" + str(_), arr=scores)
+                np.save(file="figures/backup_predictions/pred_" + str(_), arr=scores)
                 scores = []
 
         reward_list.append(total_reward)
@@ -326,9 +333,9 @@ if __name__ == '__main__':
             create_saliency_image(saliency_map=saliency_map, image=original_frames[3],
                                   output_path=state_output_path + "occlusion_explanation_" + state[1], cmap="viridis")
             insertion = rise.CausalMetric(model=model, mode='ins', step=np.squeeze(state[0]).shape[0],
-                                          substrate_fn=rise.custom_blur)
+                                          substrate_fn=rise.custom_black)
             score = insertion.single_run(img_tensor=np.squeeze(state[0]), explanation=saliency_map, name=state[1],
-                                         approach="occl")
+                                         approach="occl", use_softmax=True)
             print("Occlusion Sensitivity: " + state[1] + " AUC: " + str(rise.auc(score)))
 
             start = timeit.default_timer()
@@ -338,7 +345,7 @@ if __name__ == '__main__':
             create_saliency_image(saliency_map=saliency_map, image=original_frames[3],
                                   output_path=state_output_path + "greydanus_explanation_" + state[1])
             score = insertion.single_run(img_tensor=np.squeeze(state[0]), explanation=saliency_map, name=state[1],
-                                         approach="noise")
+                                         approach="noise", use_softmax=True)
             print("Noise Sensitivity: " + state[1] + " AUC: " + str(rise.auc(score)))
 
             start = timeit.default_timer()
@@ -354,7 +361,7 @@ if __name__ == '__main__':
                                                                                     input=np.squeeze(state[0]),
                                                                                     hide_img=False, positive_only=True)
             score = insertion.single_run(img_tensor=np.squeeze(state[0]), explanation=ranked_mask, name=state[1],
-                                         approach="lime")
+                                         approach="lime", use_softmax=True)
             print("LIME: " + state[1] + " AUC: " + str(rise.auc(score)))
 
             start = timeit.default_timer()
@@ -364,17 +371,8 @@ if __name__ == '__main__':
             create_saliency_image(saliency_map=saliency_map, image=original_frames[3],
                                   output_path=state_output_path + "rise_explanation_" + state[1])
             score = insertion.single_run(img_tensor=np.squeeze(state[0]), explanation=saliency_map, name=state[1],
-                                         approach="rise")
+                                         approach="rise", use_softmax=True)
             print("RISE: " + state[1] + " AUC: " + str(rise.auc(score)))
-
-    print("Occlusion average AUC: ")
-    print(sum(occlusion_auc) / len(occlusion_auc))
-    print("LIME average AUC:")
-    print(sum(lime_auc) / len(lime_auc))
-    print("Greydanus average AUC:")
-    print(sum(greydanus_auc) / len(greydanus_auc))
-    print("RISE average AUC:")
-    print(sum(rise_auc) / len(rise_auc))
 
     if not simulate_game:
         print("Occlusion average Time: ")
