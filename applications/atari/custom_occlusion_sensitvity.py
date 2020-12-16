@@ -51,7 +51,7 @@ class CustomOcclusionSensitivity:
         images, _ = validation_data
         sensitivity_maps = np.array(
             [
-                self.get_sensitivity_map(model, image, class_index, patch_size)
+                self.get_sensitivity_map(model, image, class_index, patch_size, color=0.0)
                 for image in images
             ]
         )
@@ -67,7 +67,7 @@ class CustomOcclusionSensitivity:
 
         return grid
 
-    def get_sensitivity_map(self, model, image, class_index, patch_size, use_softmax=False, use_old_confidence=False):
+    def get_sensitivity_map(self, model, image, class_index, patch_size, color, use_softmax=False, use_old_confidence=False):
         """
         Compute sensitivity map on a given image for a specific class index.
 
@@ -90,7 +90,7 @@ class CustomOcclusionSensitivity:
         )
 
         patches = [
-            custom_apply_grey_patch(image, top_left_x, top_left_y, patch_size)
+            custom_apply_grey_patch(image, top_left_x, top_left_y, patch_size, color=color)
             for index_x, top_left_x in enumerate(range(0, image.shape[0], patch_size))
             for index_y, top_left_y in enumerate(range(0, image.shape[1], patch_size))
         ]
@@ -134,7 +134,7 @@ class CustomOcclusionSensitivity:
         save_rgb(grid, output_dir, output_name)
 
 
-def custom_apply_grey_patch(image, top_left_x, top_left_y, patch_size):
+def custom_apply_grey_patch(image, top_left_x, top_left_y, patch_size, color):
     """
     Adds a grey patch to the image.
 
@@ -152,6 +152,6 @@ def custom_apply_grey_patch(image, top_left_x, top_left_y, patch_size):
     # black seems to work better in some scenarios.
     patched_image[
     top_left_y: top_left_y + patch_size, top_left_x: top_left_x + patch_size, :
-    ] = 0.0
+    ] = color
 
     return patched_image
