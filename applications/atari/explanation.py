@@ -307,7 +307,7 @@ if __name__ == '__main__':
 
             if _ % 100 == 0 and _ != 0:
                 print("Saving progress...")
-                np.save(file="figures/backup_predictions/pred_" + str(_), arr=scores)
+                np.save(file="figures/backup_perdictions/pred_" + str(_), arr=scores)
                 scores = []
 
         reward_list.append(total_reward)
