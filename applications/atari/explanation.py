@@ -95,7 +95,7 @@ class explainer():
             explainer = custom_greydanus.custom_greydanus_explainer()
         return explainer.generate_explanation(input, self.model, radius=r)
 
-    def generate_rise_prediction(self, input, probability=0.9, use_softmax=True):
+    def generate_rise_prediction(self, input, probability=0.9, use_softmax = True):
         """
         Generates an explanation using the LIME approach.
 
@@ -115,7 +115,8 @@ class explainer():
         if not self.masks_generated:
             self.rise_masks = explainer.generate_masks(input_size)
             self.masks_generated = True
-        prediction = explainer.explain(self.model, np.expand_dims(input, axis=0), self.rise_masks, input_size, use_softmax=use_softmax)
+        prediction = explainer.explain(self.model, np.expand_dims(input, axis=0), self.rise_masks,
+                                       input_size, use_softmax = use_softmax)
         model_prediction = self.model.predict(np.expand_dims(input, axis=0))
         model_prediction = np.argmax(np.squeeze(model_prediction))
         return prediction[model_prediction]
