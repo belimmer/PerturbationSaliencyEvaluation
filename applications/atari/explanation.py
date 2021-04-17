@@ -47,25 +47,21 @@ class explainer():
                                                      patch_size=patch_size, use_softmax=use_softmax, use_old_confidence=use_old_confidence, color=color)
         return saliency_map
 
-    def generate_lime_explanation(self, rgb_image, input, hide_img=True, positive_only=False, num_features=3):
+    def generate_lime_explanation(self, input, hide_img=True, positive_only=False, num_features=3, segmentation_fn=None):
         """
         Generates an explanation using the LIME approach.
 
         Args:
-            rgb_image (bool): is the image an RGB image (relevant for the segmentation algorithm)
             input: image which will be explained
             hide_img (bool): should the parts of the image not relevant to the explanation be greyed out
             positive_only (bool): should only parts of the image which positively impact the prediction be highlighted
+            segmentation_fn: the segmentation function used for the LIME explanation
 
         Returns:
             stacked_explanation: explanation produced by LIME
             mask: shows the most important super pixels
             ranked_mask: shows the most important super pixels and ranks them by importance
         """
-        random_seed = np.random.randint(0, high=1000)
-        segmentation_fn = SegmentationAlgorithm('quickshift', kernel_size=2,
-                                                max_dist=10, ratio=0.3,
-                                                random_seed=random_seed, convert2lab=rgb_image)
 
         lime_explainer = custom_lime.CustomLimeImageExplainer()
         explanation = lime_explainer.custom_explain_instance(input, self.model.predict, segmentation_fn=segmentation_fn,

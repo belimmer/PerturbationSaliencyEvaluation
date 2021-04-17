@@ -185,9 +185,10 @@ class CustomLimeImageExplainer(object):
             random_seed = self.random_state.randint(0, high=1000)
 
         if segmentation_fn is None:
-            segmentation_fn = SegmentationAlgorithm('quickshift', kernel_size=4,
-                                                    max_dist=200, ratio=0.2,
-                                                    random_seed=random_seed)
+            # segmentation_fn = SegmentationAlgorithm('quickshift', kernel_size=4,
+            #                                         max_dist=200, ratio=0.2,
+            #                                         random_seed=random_seed)
+            segmentation_fn = (lambda x: self.rectangle_segmentation(x, (5,5)))
         try:
             segments = segmentation_fn(image)
         except ValueError as e:
@@ -280,3 +281,41 @@ class CustomLimeImageExplainer(object):
             preds = classifier_fn(np.array(imgs))
             labels.extend(preds)
         return data, np.array(labels)
+
+
+def quadratic_segmentation(image, number_quads):
+    """
+    Segements the image into quads
+    :param image: the image to be segmented
+    :param number_quads: the number of quads in the smaller dimension of height or width
+    :return: the segmentation mask
+    """
+    smaller_dim = min(image.shape[0], image.shape[1])
+    quad_size = smaller_dim // number_quads
+
+    return rectangle_segmentation(image, (quad_size, quad_size))
+
+
+def rectangle_segmentation(image, rectangle_size):
+    """
+    Segements the image into rectangles of the given size
+    :param image: the image to be segmented
+    :param rectangle_size: the size of the rectangle as (height, width) tuple
+    :return: the segmentation mask
+    """
+    out = np.zeros((image.shape[0], image.shape[1]), dtype=int)
+
+    # calculate how many rectangles fit in each direction
+    number_rectangles_x = image.shape[1] // rectangle_size[1] + (image.shape[1] % rectangle_size[1] > 0)
+    number_rectangles_y = image.shape[0] // rectangle_size[0] + (image.shape[0] % rectangle_size[0] > 0)
+
+    segment_index = 0
+    for offset_x in range(number_rectangles_x):
+        for offset_y in range(number_rectangles_y):
+            pixel_offset_x = offset_x * rectangle_size[1]
+            pixel_offset_y = offset_y * rectangle_size[0]
+            out[pixel_offset_y: pixel_offset_y + rectangle_size[0],
+            pixel_offset_x: pixel_offset_x + rectangle_size[1]] = segment_index
+            segment_index += 1
+
+    return out

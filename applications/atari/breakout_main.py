@@ -2,7 +2,7 @@ from custom_atari_wrapper import atari_wrapper
 from explanation import explainer
 from explanation import create_lime_image
 from explanation import create_saliency_image
-from explanation import insertion_for_all
+from applications.atari.explanation import insertion_for_all
 import gym
 import keras
 import numpy as np
