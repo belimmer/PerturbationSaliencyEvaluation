@@ -9,6 +9,7 @@ License: MIT
 from scipy.ndimage.filters import gaussian_filter
 import numpy as np
 from PIL import Image
+from sklearn.utils.extmath import softmax
 
 
 class greydanus_explainer():
@@ -36,21 +37,22 @@ class greydanus_explainer():
         mask = gaussian_filter(mask, sigma=r)  # blur the circle of pixels. this is a 2D Gaussian for r=r^2=1
         return mask / mask.max()
 
-    def generate_explanation(self, stacked_frames, model, radius):
+    def generate_explanation(self, stacked_frames, model, radius, raw_diff=False):
         """
         Generates an explanation the prediction of a CNN
 
         Args:
             stacked_frames: input of which the prediction will be explained
             model: the model which should be explained
-            radius: not used
+            radius: the radius of the blur
+            raw_diff: use the raw difference of the confidence values or the euklidean disatance
 
         Returns:
             scores: The saliency map which functions as explanantion
         """
         # d: density of scores (if d==1, then get a score for every pixel...
         #    if d==2 then every other, which is 25% of total pixels for a 2D image)
-        d = 5
+        d = radius
         # r: radius of blur
         r = radius
 
@@ -71,7 +73,11 @@ class greydanus_explainer():
 
                 masked_input = np.expand_dims(greydanus_explainer.occlude(stacked_frames, stacked_mask), axis=0)
                 masked_output = model.predict(masked_input)
-                scores[int(i / d), int(j / d)] = (pow(original_output - masked_output, 2).sum() * 0.5)
+                if raw_diff:
+                    action_index = np.argmax(original_output)
+                    scores[int(i / d), int(j / d)] = 1 -  np.squeeze(softmax(masked_output))[action_index]
+                else:
+                    scores[int(i / d), int(j / d)] = (pow(original_output - masked_output, 2).sum() * 0.5)
 
         pmax = scores.max()
         scores = Image.fromarray(scores).resize(size=[x, y], resample=Image.BILINEAR)

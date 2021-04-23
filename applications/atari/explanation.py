@@ -27,6 +27,7 @@ class explainer():
         self.model = model
         self.rise_masks = []
         self.masks_generated = False
+        self.insertion = rise.CausalMetric(model=model, mode='ins', step=84, substrate_fn=rise.custom_black)# TODO Fix dirty number for steps
 
     def generate_occlusion_explanation(self, input, patch_size=5, use_softmax=False, use_old_confidence=False, color=0.0):
         """
@@ -73,7 +74,7 @@ class explainer():
                                                                                        hide_rest=hide_img)
         return stacked_explanation, mask, ranked_mask
 
-    def generate_greydanus_explanation(self, input, r=5, blur=True):
+    def generate_greydanus_explanation(self, input, r=5, blur=True, **kwargs):
         """
         Generates an explanation using the Noise Sensitivity (Greydanus) approach.
 
@@ -89,21 +90,24 @@ class explainer():
             explainer = greydanus.greydanus_explainer()
         else:
             explainer = custom_greydanus.custom_greydanus_explainer()
-        return explainer.generate_explanation(input, self.model, radius=r)
+        return explainer.generate_explanation(input, self.model, radius=r, **kwargs)
 
-    def generate_rise_prediction(self, input, probability=0.9, use_softmax = True):
+    def generate_rise_prediction(self, input, probability=0.9, use_softmax = True, number_of_mask = 2000, mask_size=8):
         """
         Generates an explanation using the LIME approach.
 
         Args:
             input: image which will be explained
             probability: probability for a mask to blur a pixel of the image
+            use_softmax: should the softmax of the prediction be used for comparing different inputs
+            number_of_mask: the number of calculated masks
+            mask_size: the downscaled masks have size (mask_size x mask_size)
 
         Returns:
             a saliency map which functions as explanation
         """
-        N = 2000  #number of masks
-        s = 8
+        N = number_of_mask  #number of masks
+        s = mask_size
         p1 = probability  #probability to not occlude a pixel
         batch_size = 1
         input_size = (input.shape[0], input.shape[1])
@@ -116,6 +120,20 @@ class explainer():
         model_prediction = self.model.predict(np.expand_dims(input, axis=0))
         model_prediction = np.argmax(np.squeeze(model_prediction))
         return prediction[model_prediction]
+
+    def insertion_metric(self,_, saliency_fn, stacked_frames):
+        """
+        calculate the insertion metric for the given saliency_fn for the input *stacked_frames*
+        :param _: the frame number, used for naming single plots
+        :param saliency_fn: the function used to create saliency maps
+        :param stacked_frames: the input frames for the agent
+        :return: a list containing the insertion metric scores
+        """
+        saliency_map = saliency_fn(np.squeeze(stacked_frames))
+
+        score = self.insertion.single_run(img_tensor=np.squeeze(stacked_frames), explanation=saliency_map,
+                                     name="frame_" + str(_), approach="_", plot=False, use_softmax=True)
+        return score
 
 
 def create_saliency_image(saliency_map, image, output_path, cmap='jet'):
