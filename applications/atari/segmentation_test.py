@@ -24,8 +24,7 @@ def test_parameters(_states, _segmentation_fn, parameters, _best_aucs, _best_par
     for state in _states:
         input = np.squeeze(state[0])
         start = timeit.default_timer()
-        explanation, mask, ranked_mask = my_explainer.generate_lime_explanation(rgb_image=False,
-                                                                                input=input,
+        explanation, mask, ranked_mask = my_explainer.generate_lime_explanation(input=input,
                                                                                 hide_img=False,
                                                                                 positive_only=True,
                                                                                 segmentation_fn= _segmentation_fn)
@@ -65,7 +64,7 @@ if __name__ == '__main__':
     state_path = "HIGHLIGHTS_states/"
     state_output_path = "output_highlight_states/"
     model = keras.models.load_model('models/MsPacman_5M_ingame_reward.h5')
-    segmentation = "patches"
+    segmentation = "rise"
 
     states = []
 
@@ -150,3 +149,62 @@ if __name__ == '__main__':
                         lambda x: rectangle_segmentation(x, (i,j)))
 
                     test_parameters(states, segmentation_fn, (i,j), best_aucs, best_parameters, save_dir)
+
+
+    if segmentation == "rise":
+        save_dir = os.path.join("parameter_results", "rise")
+        if not os.path.isdir(save_dir):
+            os.mkdir(save_dir)
+
+        best_aucs = []
+        best_parameters = []
+        for i in range(1, 10):
+            for j in range(5, 17):
+               for k in range(1,7):
+                   probability = 0.1 * i
+                   mask_size = j
+                   number_of_masks = 500 * k
+
+                   my_explainer = explainer(model=model) # need new explainer since the masks are saved
+
+                   sum = 0
+                   for state in states:
+                       input = np.squeeze(state[0])
+                       start = timeit.default_timer()
+                       saliency_map = my_explainer.generate_rise_prediction(input,
+                                                                            probability=probability,
+                                                                            use_softmax = True,
+                                                                            number_of_mask = number_of_masks,
+                                                                            mask_size=mask_size)
+                       score = insertion.single_run(img_tensor=input, explanation=saliency_map, name=state[1],
+                                                    approach="lime", use_softmax=True, plot=False)
+                       stop = timeit.default_timer()
+                       print("time:" + str(stop - start))
+                       auc = score.sum() / (score.shape[0])
+                       sum += auc
+
+                   parameters=(probability,mask_size,number_of_masks)
+                   if len(best_aucs) < 5:
+                       best_aucs.append(sum)
+                       best_parameters.append(parameters)
+                       # sort the lists
+                       best_parameters = [x for (_, x) in
+                                          sorted(zip(best_aucs, best_parameters), reverse=True,
+                                                 key=lambda pair: pair[0])]
+                       best_aucs = sorted(best_aucs, reverse=True)
+                       # update files
+                       np.savetxt(os.path.join(save_dir, "best_parameters.txt"), best_parameters)
+                       np.savetxt(os.path.join(save_dir, "best_aucs.txt"), best_aucs)
+                   else:
+                       for idx in range(5):
+                           if best_aucs[idx] < sum:
+                               # add new values
+                               best_aucs.insert(idx, sum)
+                               best_parameters.insert(idx, parameters)
+                               # remove old values
+                               best_aucs.pop(-1)
+                               best_parameters.pop(-1)
+                               # update files
+                               np.savetxt(os.path.join(save_dir, "best_parameters.txt"), best_parameters)
+                               np.savetxt(os.path.join(save_dir, "best_aucs.txt"), best_aucs)
+                               break

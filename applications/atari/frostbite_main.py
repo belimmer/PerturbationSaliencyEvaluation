@@ -33,7 +33,7 @@ if __name__ == '__main__':
 
     scores = []
     if fixed_start :
-        wrapper.fixed_reset(1, 0) #used  action 3 and 4
+        wrapper.fixed_reset(1, 0)
     for _ in range(steps):
         if _ < 4:
             action = env.action_space.sample()
