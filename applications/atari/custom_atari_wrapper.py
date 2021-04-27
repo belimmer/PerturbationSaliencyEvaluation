@@ -116,7 +116,7 @@ class atari_wrapper():
         self.env.reset()
         for _ in range(step_number):
             obs, _, done, _ = self.env.step(action)
-            self.env.render()
+            # self.env.render()
             if done:
                 obs = self.env.reset()
         return obs

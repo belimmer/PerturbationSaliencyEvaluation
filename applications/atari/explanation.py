@@ -129,11 +129,14 @@ class explainer():
         :param stacked_frames: the input frames for the agent
         :return: a list containing the insertion metric scores
         """
+        start = timeit.default_timer()
         saliency_map = saliency_fn(np.squeeze(stacked_frames))
+        stop = timeit.default_timer()
+        time = stop - start
 
         score = self.insertion.single_run(img_tensor=np.squeeze(stacked_frames), explanation=saliency_map,
                                      name="frame_" + str(_), approach="_", plot=False, use_softmax=True)
-        return score
+        return score, time
 
 
 def create_saliency_image(saliency_map, image, output_path, cmap='jet'):
