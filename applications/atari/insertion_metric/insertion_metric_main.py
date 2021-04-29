@@ -102,7 +102,7 @@ def test_one_approach(saliency_fn, model, save_dir, _GAME):
 
 if __name__ == '__main__':
 
-    GAME = "breakout"
+    GAME = "pacman"
 
     # model needs to be defined outside of the insertion metric since it is needed for the different saliency fn
     if GAME == "pacman":
@@ -127,7 +127,7 @@ if __name__ == '__main__':
                                                                       hide_img=False,
                                                                       positive_only=True,
                                                                       segmentation_fn=segmentation_fn))[2])
-    test_one_approach(saliency_fn=saliency_fn_, model=model_, save_dir=save_dir_)
+    test_one_approach(saliency_fn=saliency_fn_, model=model_, save_dir=save_dir_, _GAME=GAME)
 
     save_dir_ = os.path.join(dir, "Lime_quickshift_1_7_015")
     segmentation_fn = (lambda x: seg.quickshift(x, kernel_size=1, max_dist=7, ratio=0.15, convert2lab=False))
@@ -135,7 +135,7 @@ if __name__ == '__main__':
                                                                       hide_img=False,
                                                                       positive_only=True,
                                                                       segmentation_fn=segmentation_fn))[2])
-    test_one_approach(saliency_fn=saliency_fn_, model=model_, save_dir=save_dir_)
+    test_one_approach(saliency_fn=saliency_fn_, model=model_, save_dir=save_dir_, _GAME=GAME)
 
     save_dir_ = os.path.join(dir, "Lime_felzenswalb_71_4e-1_0")
     segmentation_fn = (
@@ -144,7 +144,7 @@ if __name__ == '__main__':
                                                                       hide_img=False,
                                                                       positive_only=True,
                                                                       segmentation_fn=segmentation_fn))[2])
-    test_one_approach(saliency_fn=saliency_fn_, model=model_, save_dir=save_dir_)
+    test_one_approach(saliency_fn=saliency_fn_, model=model_, save_dir=save_dir_, _GAME=GAME)
 
 
     save_dir_ = os.path.join(dir, "rise_08_16_3000")
@@ -153,7 +153,7 @@ if __name__ == '__main__':
                                                                      use_softmax=True,
                                                                      number_of_mask=3000,
                                                                      mask_size=16)))
-    test_one_approach(saliency_fn=saliency_fn_, model=model_, save_dir=save_dir_)
+    test_one_approach(saliency_fn=saliency_fn_, model=model_, save_dir=save_dir_, _GAME=GAME)
 
     save_dir_ = os.path.join(dir, "rise_08_21_3000")
     my_explainer = explainer(model=model_)
@@ -162,7 +162,7 @@ if __name__ == '__main__':
                                                                      use_softmax=True,
                                                                      number_of_mask=3000,
                                                                      mask_size=21)))
-    test_one_approach(saliency_fn=saliency_fn_, model=model_, save_dir=save_dir_)
+    test_one_approach(saliency_fn=saliency_fn_, model=model_, save_dir=save_dir_, _GAME=GAME)
 
     save_dir_ = os.path.join(dir, "rise_08_23_3000")
     my_explainer = explainer(model=model_)
@@ -171,31 +171,31 @@ if __name__ == '__main__':
                                                                      use_softmax=True,
                                                                      number_of_mask=3000,
                                                                      mask_size=23)))
-    test_one_approach(saliency_fn=saliency_fn_, model=model_, save_dir=save_dir_)
+    test_one_approach(saliency_fn=saliency_fn_, model=model_, save_dir=save_dir_, _GAME=GAME)
 
 
     save_dir_ = os.path.join(dir, "occl_4_0")
     saliency_fn_ = (lambda x: (my_explainer.generate_occlusion_explanation(input=x, patch_size=4, color=0,
                                                                            use_softmax=True)))
-    test_one_approach(saliency_fn=saliency_fn_, model=model_, save_dir=save_dir_)
+    test_one_approach(saliency_fn=saliency_fn_, model=model_, save_dir=save_dir_, _GAME=GAME)
 
     save_dir_ = os.path.join(dir, "occl_4_gray")
     saliency_fn_ = (lambda x: (my_explainer.generate_occlusion_explanation(input=x, patch_size=4, color=0.5,
                                                                            use_softmax=True)))
-    test_one_approach(saliency_fn=saliency_fn_, model=model_, save_dir=save_dir_)
+    test_one_approach(saliency_fn=saliency_fn_, model=model_, save_dir=save_dir_, _GAME=GAME)
 
 
     save_dir_ = os.path.join(dir, "noise_4_blur")
     saliency_fn_ = (lambda x: my_explainer.generate_greydanus_explanation(x, r=4, blur=True))
-    test_one_approach(saliency_fn=saliency_fn_, model=model_, save_dir=save_dir_)
+    test_one_approach(saliency_fn=saliency_fn_, model=model_, save_dir=save_dir_, _GAME=GAME)
 
     save_dir_ = os.path.join(dir, "noise_4_black")
     saliency_fn_ = (lambda x: my_explainer.generate_greydanus_explanation(x, r=4, blur=False))
-    test_one_approach(saliency_fn=saliency_fn_, model=model_, save_dir=save_dir_)
+    test_one_approach(saliency_fn=saliency_fn_, model=model_, save_dir=save_dir_, _GAME=GAME)
 
     save_dir_ = os.path.join(dir, "noise_4_blur_rawDiff")
     saliency_fn_ = (lambda x: my_explainer.generate_greydanus_explanation(x, r=4, blur=True, raw_diff=True))
-    test_one_approach(saliency_fn=saliency_fn_, model=model_, save_dir=save_dir_)
+    test_one_approach(saliency_fn=saliency_fn_, model=model_, save_dir=save_dir_, _GAME=GAME)
 
 ####### Main values tested on pacman:
     # save_dir_ = os.path.join(dir, "Lime_patches_8_6")
