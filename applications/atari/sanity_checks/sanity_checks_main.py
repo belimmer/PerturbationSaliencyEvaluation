@@ -430,7 +430,7 @@ if __name__ == '__main__':
         PROBABILITY = 0.8
         MASK_SIZE = 21
         NUM_MASKS = 3000
-        file_name = APPROACH + '_' + str(PROBABILITY*10) + '_' + str(MASK_SIZE) +  '_' + str(NUM_MASKS) + ".csv"
+        file_name = APPROACH + '_' + "08" + '_' + str(MASK_SIZE) +  '_' + str(NUM_MASKS) + ".csv"
         sanity_check(game=GAME, approach=APPROACH, _file_name=file_name, probability = PROBABILITY,
                      mask_size = MASK_SIZE, number_of_mask=NUM_MASKS)
 
