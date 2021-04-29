@@ -29,7 +29,7 @@ class explainer():
         self.masks_generated = False
         self.insertion = rise.CausalMetric(model=model, mode='ins', step=84, substrate_fn=rise.custom_black)# TODO Fix dirty number for steps
 
-    def generate_occlusion_explanation(self, input, patch_size=5, use_softmax=False, use_old_confidence=False, color=0.0):
+    def generate_occlusion_explanation(self, input, patch_size=5, use_softmax=False, use_old_confidence=False, color=0.0, neuron_selection = False):
         """
         Generates an explanation using the Occlusion Sensitivity approach.
 
@@ -37,12 +37,16 @@ class explainer():
             input: image which will be explained
             patch_size (int): size of the square used to occlude the image
             use_softmax (bool): should a softmax be used for the output of the model
+            neuron_selection (int): the index of the action that should be analyzed. Takes the highest action if False
 
         Returns:
             saliency_map: a saliency map which functions as explanation
         """
         probabilities = np.squeeze(self.model.predict(np.expand_dims(input, axis=0)))
-        proposed_action = np.argmax(probabilities)
+        if neuron_selection is False:
+            proposed_action = np.argmax(probabilities)
+        else:
+            proposed_action = neuron_selection
         explainer = custom_occlusion_sensitvity.CustomOcclusionSensitivity()
         saliency_map = explainer.get_sensitivity_map(image=input, model=self.model, class_index=proposed_action,
                                                      patch_size=patch_size, use_softmax=use_softmax, use_old_confidence=use_old_confidence, color=color)
