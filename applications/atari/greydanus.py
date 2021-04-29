@@ -37,7 +37,7 @@ class greydanus_explainer():
         mask = gaussian_filter(mask, sigma=r)  # blur the circle of pixels. this is a 2D Gaussian for r=r^2=1
         return mask / mask.max()
 
-    def generate_explanation(self, stacked_frames, model, radius, raw_diff=False):
+    def generate_explanation(self, stacked_frames, model, radius, raw_diff=False, neuron_selection = False):
         """
         Generates an explanation the prediction of a CNN
 
@@ -62,7 +62,7 @@ class greydanus_explainer():
         x = stacked_frames.shape[0]
         y = stacked_frames.shape[1]
 
-        scores = np.zeros((int(x / d) + 1, int(y / d) + 1))  # saliency scores S(t,i,j)
+        scores = np.zeros((int((x-1) / d) + 1, int((y-1) / d) + 1))  # saliency scores S(t,i,j)
 
         for i in range(0, x, d):
             for j in range(0, y, d):
@@ -74,8 +74,11 @@ class greydanus_explainer():
                 masked_input = np.expand_dims(greydanus_explainer.occlude(stacked_frames, stacked_mask), axis=0)
                 masked_output = model.predict(masked_input)
                 if raw_diff:
-                    action_index = np.argmax(original_output)
-                    scores[int(i / d), int(j / d)] = 1 -  np.squeeze(softmax(masked_output))[action_index]
+                    if neuron_selection is not False:
+                        action_index = neuron_selection
+                    else:
+                        action_index = np.argmax(original_output)
+                    scores[int(i / d), int(j / d)] = 1 - np.squeeze(softmax(masked_output))[action_index]
                 else:
                     scores[int(i / d), int(j / d)] = (pow(original_output - masked_output, 2).sum() * 0.5)
 

@@ -31,12 +31,13 @@ class custom_greydanus_explainer():
 
         """
         y, x = np.ogrid[-center[0]:size[0] - center[0], -center[1]:size[1] - center[1]]
-        keep = x * x + y * y <= radius
+        # distance to center(calculated with pythagoras) has to be lower then or equal to radius
+        keep = x * x + y * y <= radius * radius
         mask = np.zeros(size)
         mask[keep] = 1  # select a circle of pixels
         return mask
 
-    def generate_explanation(self, stacked_frames, model, radius, raw_diff = False):
+    def generate_explanation(self, stacked_frames, model, radius, raw_diff = False, neuron_selection = False):
         """
         Generates an explanation for the prediction of a CNN
 
@@ -58,7 +59,7 @@ class custom_greydanus_explainer():
         x = stacked_frames.shape[0]
         y = stacked_frames.shape[1]
 
-        scores = np.zeros((int(x / d) + 1, int(y / d) + 1))  # saliency scores S(t,i,j)
+        scores = np.zeros((int((x-1) / d) + 1, int((y-1) / d) + 1))  # saliency scores S(t,i,j)
 
         for i in range(0, x, d):
             for j in range(0, y, d):
@@ -70,7 +71,10 @@ class custom_greydanus_explainer():
                 masked_input = np.expand_dims(custom_greydanus_explainer.occlude(stacked_frames, stacked_mask), axis=0)
                 masked_output = model.predict(masked_input)
                 if raw_diff:
-                    action_index = np.argmax(original_output)
+                    if neuron_selection is not False:
+                        action_index = neuron_selection
+                    else:
+                        action_index = np.argmax(original_output)
                     scores[int(i / d), int(j / d)] = 1 - np.squeeze(softmax(masked_output))[action_index]
                 else:
                     scores[int(i / d), int(j / d)] = (pow(original_output - masked_output, 2).sum() * 0.5)
