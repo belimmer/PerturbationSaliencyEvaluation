@@ -122,7 +122,7 @@ if __name__ == '__main__':
 
         best_aucs = []
         best_parameters = []
-        for i in range(0, 11):
+        for i in range(0, 21):
             for j in range(0, 11):
                 for k in range(0, 5):
                     n_segments = 40 + (i * 20)
@@ -159,7 +159,7 @@ if __name__ == '__main__':
         best_aucs = []
         best_parameters = []
         for i in range(1, 10):
-            for j in range(5, 17):
+            for j in range(4, 25):
                for k in range(1,7):
                    probability = 0.1 * i
                    mask_size = j
