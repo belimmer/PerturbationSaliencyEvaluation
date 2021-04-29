@@ -96,9 +96,10 @@ class explainer():
             explainer = custom_greydanus.custom_greydanus_explainer()
         return explainer.generate_explanation(input, self.model, radius=r, **kwargs)
 
-    def generate_rise_prediction(self, input, probability=0.9, use_softmax = True, number_of_mask = 2000, mask_size=8):
+    def generate_rise_prediction(self, input, probability=0.9, use_softmax = True, number_of_mask = 2000, mask_size=8
+                                 , neuron_selection = False):
         """
-        Generates an explanation using the LIME approach.
+        Generates an explanation using the RISE approach.
 
         Args:
             input: image which will be explained
@@ -106,6 +107,7 @@ class explainer():
             use_softmax: should the softmax of the prediction be used for comparing different inputs
             number_of_mask: the number of calculated masks
             mask_size: the downscaled masks have size (mask_size x mask_size)
+            neuron_selection: if this is not False, it gives the index of the action that should be explained
 
         Returns:
             a saliency map which functions as explanation
@@ -121,8 +123,11 @@ class explainer():
             self.masks_generated = True
         prediction = explainer.explain(self.model, np.expand_dims(input, axis=0), self.rise_masks,
                                        input_size, use_softmax = use_softmax)
-        model_prediction = self.model.predict(np.expand_dims(input, axis=0))
-        model_prediction = np.argmax(np.squeeze(model_prediction))
+        if neuron_selection is False:
+            model_prediction = self.model.predict(np.expand_dims(input, axis=0))
+            model_prediction = np.argmax(np.squeeze(model_prediction))
+        else:
+            model_prediction = neuron_selection
         return prediction[model_prediction]
 
     def insertion_metric(self,_, saliency_fn, stacked_frames):

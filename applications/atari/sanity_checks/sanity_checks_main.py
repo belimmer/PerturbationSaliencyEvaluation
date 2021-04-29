@@ -267,6 +267,20 @@ def sanity_check( game, approach, _file_name, **kwargs):
         saliency_fn_5 = (
             lambda x, **kwargs2: analyzer5.generate_occlusion_explanation(input=x, **kwargs, **kwargs2))
 
+    if approach == "rise":
+        og_saliency_fn = (
+            lambda x: original_analyzer.generate_rise_prediction(input=x, **kwargs))
+        saliency_fn_1 = (
+            lambda x, **kwargs2: analyzer1.generate_rise_prediction(input=x, **kwargs, **kwargs2))
+        saliency_fn_2 = (
+            lambda x, **kwargs2: analyzer2.generate_rise_prediction(input=x, **kwargs, **kwargs2))
+        saliency_fn_3 = (
+            lambda x, **kwargs2: analyzer3.generate_rise_prediction(input=x, **kwargs, **kwargs2))
+        saliency_fn_4 = (
+            lambda x, **kwargs2: analyzer4.generate_rise_prediction(input=x, **kwargs, **kwargs2))
+        saliency_fn_5 = (
+            lambda x, **kwargs2: analyzer5.generate_rise_prediction(input=x, **kwargs, **kwargs2))
+
     fixed_start = True
     if fixed_start:
         if game == "pacman":
@@ -285,6 +299,20 @@ def sanity_check( game, approach, _file_name, **kwargs):
                     action = 1 # this makes breakout start much faster
                 else:
                     action = 0
+            # In order for RISE to use the same Masks for all networks, we generate them once here
+            if approach == "rise":
+                if _ == 3:
+                    argmax = og_saliency_fn(stacked_frames)
+                    analyzer1.rise_masks = original_analyzer.rise_masks
+                    analyzer1.masks_generated = True
+                    analyzer2.rise_masks = original_analyzer.rise_masks
+                    analyzer2.masks_generated = True
+                    analyzer3.rise_masks = original_analyzer.rise_masks
+                    analyzer3.masks_generated = True
+                    analyzer4.rise_masks = original_analyzer.rise_masks
+                    analyzer4.masks_generated = True
+                    analyzer5.rise_masks = original_analyzer.rise_masks
+                    analyzer5.masks_generated = True
         else:
             my_input = np.expand_dims(stacked_frames, axis=0)
             output = model.predict(
@@ -385,29 +413,52 @@ if __name__ == '__main__':
     #     sanity_check(game=GAME, approach=APPROACH, _file_name=file_name, r=RADIUS, blur=BLUR, raw_diff=RAW_DIFF)
 
     # OCCLUSION SENSITIVITY
-    APPROACH = "occl"
-    PATCH_SIZE = 4
+    # APPROACH = "occl"
+    # PATCH_SIZE = 4
+    # for GAME in games:
+    #     COLOR = 0
+    #     file_name = APPROACH + '_' + str(PATCH_SIZE) + '_' + str(COLOR) + ".csv"
+    #     sanity_check(game=GAME, approach=APPROACH, _file_name=file_name, patch_size=5, color = COLOR, use_softmax = True)
+    #
+    #     COLOR = "gray"
+    #     file_name = APPROACH + '_' + str(PATCH_SIZE) + '_' + str(COLOR) + ".csv"
+    #     sanity_check(game=GAME, approach=APPROACH, _file_name=file_name, patch_size=5, color = 0.5, use_softmax = True)
+
+    # RISE
+    APPROACH = "rise"
     for GAME in games:
-        COLOR = 0
-        file_name = APPROACH + '_' + str(PATCH_SIZE) + '_' + str(COLOR) + ".csv"
-        sanity_check(game=GAME, approach=APPROACH, _file_name=file_name, patch_size=5, color = COLOR)
+        PROBABILITY = 0.8
+        MASK_SIZE = 21
+        NUM_MASKS = 3000
+        file_name = APPROACH + '_' + str(PROBABILITY*10) + '_' + str(MASK_SIZE) +  '_' + str(NUM_MASKS) + ".csv"
+        sanity_check(game=GAME, approach=APPROACH, _file_name=file_name, probability = PROBABILITY,
+                     mask_size = MASK_SIZE, number_of_mask=NUM_MASKS)
 
-    RADIUS = 4
-    APPROACH = "noise"
-    for GAME in games:
-        dir_name = os.path.join("results", GAME)
-        BLUR = False
-        RAW_DIFF = False
-        file_name = APPROACH + '_' + str(BLUR) + '_' + str(RAW_DIFF) + '_' + str(RADIUS) + ".csv"
-        file_name = os.path.join(dir_name, file_name)
-        plot_sanity_check_results(file_name)
-
-        BLUR = True
-        file_name = APPROACH + '_' + str(BLUR) + '_' + str(RAW_DIFF) + '_' + str(RADIUS) + ".csv"
-        file_name = os.path.join(dir_name, file_name)
-        plot_sanity_check_results(file_name)
-
-        RAW_DIFF = True
-        file_name = APPROACH + '_' + str(BLUR) + '_' + str(RAW_DIFF) + '_' + str(RADIUS) + ".csv"
-        file_name = os.path.join(dir_name, file_name)
-        plot_sanity_check_results(file_name)
+#####Plotting
+    # for GAME in games:
+    #     dir_name = os.path.join("results", GAME)
+    #     APPROACH = "occl"
+    #     PATCH_SIZE = 4
+    #     COLOR = 0
+    #     file_name = APPROACH + '_' + str(PATCH_SIZE) + '_' + str(COLOR) + ".csv"
+    #     file_name = os.path.join(dir_name, file_name)
+    #     plot_sanity_check_results(file_name)
+    #
+    #
+    #     APPROACH = "noise"
+    #     RADIUS = 4
+    #     BLUR = False
+    #     RAW_DIFF = False
+    #     file_name = APPROACH + '_' + str(BLUR) + '_' + str(RAW_DIFF) + '_' + str(RADIUS) + ".csv"
+    #     file_name = os.path.join(dir_name, file_name)
+    #     plot_sanity_check_results(file_name)
+    #
+    #     BLUR = True
+    #     file_name = APPROACH + '_' + str(BLUR) + '_' + str(RAW_DIFF) + '_' + str(RADIUS) + ".csv"
+    #     file_name = os.path.join(dir_name, file_name)
+    #     plot_sanity_check_results(file_name)
+    #
+    #     RAW_DIFF = True
+    #     file_name = APPROACH + '_' + str(BLUR) + '_' + str(RAW_DIFF) + '_' + str(RADIUS) + ".csv"
+    #     file_name = os.path.join(dir_name, file_name)
+    #     plot_sanity_check_results(file_name)
