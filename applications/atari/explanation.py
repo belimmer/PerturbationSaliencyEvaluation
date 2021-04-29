@@ -42,8 +42,8 @@ class explainer():
         Returns:
             saliency_map: a saliency map which functions as explanation
         """
-        probabilities = np.squeeze(self.model.predict(np.expand_dims(input, axis=0)))
         if neuron_selection is False:
+            probabilities = np.squeeze(self.model.predict(np.expand_dims(input, axis=0)))
             proposed_action = np.argmax(probabilities)
         else:
             proposed_action = neuron_selection
