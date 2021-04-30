@@ -52,7 +52,8 @@ class explainer():
                                                      patch_size=patch_size, use_softmax=use_softmax, use_old_confidence=use_old_confidence, color=color)
         return saliency_map
 
-    def generate_lime_explanation(self, input, hide_img=True, positive_only=False, num_features=3, segmentation_fn=None):
+    def generate_lime_explanation(self, input, hide_img=True, positive_only=False, num_features=3, segmentation_fn=None
+                                  , neuron_selection=False):
         """
         Generates an explanation using the LIME approach.
 
@@ -69,13 +70,25 @@ class explainer():
         """
 
         lime_explainer = custom_lime.CustomLimeImageExplainer()
+        if neuron_selection is not False:
+            top_labels = False
+            labels = [neuron_selection]
+        else:
+            top_labels = 1
+            labels = (1,)
         explanation = lime_explainer.custom_explain_instance(input, self.model.predict, segmentation_fn=segmentation_fn,
-                                                      top_labels=1, hide_color=0,
-                                                      num_samples=1000)
-        stacked_explanation, mask, ranked_mask = explanation.custom_get_image_and_mask(explanation.top_labels[0],
+                                                      top_labels=top_labels, hide_color=0,
+                                                      num_samples=1000, labels= labels)
+        if neuron_selection is False:
+            stacked_explanation, mask, ranked_mask = explanation.custom_get_image_and_mask(explanation.top_labels[0],
                                                                                        positive_only=positive_only,
                                                                                        num_features=num_features,
                                                                                        hide_rest=hide_img)
+        else:
+            stacked_explanation, mask, ranked_mask = explanation.custom_get_image_and_mask(neuron_selection,
+                                                                                           positive_only=positive_only,
+                                                                                           num_features=num_features,
+                                                                                           hide_rest=hide_img)
         return stacked_explanation, mask, ranked_mask
 
     def generate_greydanus_explanation(self, input, r=5, blur=True, **kwargs):

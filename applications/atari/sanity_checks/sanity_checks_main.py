@@ -22,6 +22,7 @@ import pandas as pd
 import keras
 import seaborn as sns
 import gym
+import skimage.segmentation as seg
 
 from applications.atari.custom_atari_wrapper import atari_wrapper
 from applications.atari.explanation import explainer
@@ -281,6 +282,20 @@ def sanity_check( game, approach, _file_name, **kwargs):
         saliency_fn_5 = (
             lambda x, **kwargs2: analyzer5.generate_rise_prediction(input=x, **kwargs, **kwargs2))
 
+    if approach == "lime":
+        og_saliency_fn = (
+            lambda x: original_analyzer.generate_lime_explanation(input=x, **kwargs)[2])
+        saliency_fn_1 = (
+            lambda x, **kwargs2: analyzer1.generate_lime_explanation(input=x, **kwargs, **kwargs2)[2])
+        saliency_fn_2 = (
+            lambda x, **kwargs2: analyzer2.generate_lime_explanation(input=x, **kwargs, **kwargs2)[2])
+        saliency_fn_3 = (
+            lambda x, **kwargs2: analyzer3.generate_lime_explanation(input=x, **kwargs, **kwargs2)[2])
+        saliency_fn_4 = (
+            lambda x, **kwargs2: analyzer4.generate_lime_explanation(input=x, **kwargs, **kwargs2)[2])
+        saliency_fn_5 = (
+            lambda x, **kwargs2: analyzer5.generate_lime_explanation(input=x, **kwargs, **kwargs2)[2])
+
     fixed_start = True
     if fixed_start:
         if game == "pacman":
@@ -424,15 +439,25 @@ if __name__ == '__main__':
     #     file_name = APPROACH + '_' + str(PATCH_SIZE) + '_' + str(COLOR) + ".csv"
     #     sanity_check(game=GAME, approach=APPROACH, _file_name=file_name, patch_size=5, color = 0.5, use_softmax = True)
 
-    # RISE
-    APPROACH = "rise"
+    # # RISE
+    # APPROACH = "rise"
+    # for GAME in games:
+    #     PROBABILITY = 0.8
+    #     MASK_SIZE = 21
+    #     NUM_MASKS = 3000
+    #     file_name = APPROACH + '_' + "08" + '_' + str(MASK_SIZE) +  '_' + str(NUM_MASKS) + ".csv"
+    #     sanity_check(game=GAME, approach=APPROACH, _file_name=file_name, probability = PROBABILITY,
+    #                  mask_size = MASK_SIZE, number_of_mask=NUM_MASKS)
+
+    #### LIME
+    APPROACH = "lime"
     for GAME in games:
-        PROBABILITY = 0.8
-        MASK_SIZE = 21
-        NUM_MASKS = 3000
-        file_name = APPROACH + '_' + "08" + '_' + str(MASK_SIZE) +  '_' + str(NUM_MASKS) + ".csv"
-        sanity_check(game=GAME, approach=APPROACH, _file_name=file_name, probability = PROBABILITY,
-                     mask_size = MASK_SIZE, number_of_mask=NUM_MASKS)
+        file_name = "Lime_slic_80_100_0.csv"
+        segmentation_fn = (lambda x: seg.slic(x, n_segments=80, compactness=100, sigma=0))
+        sanity_check(game=GAME, approach=APPROACH, _file_name=file_name,hide_img=False,
+                                                                      positive_only=True,
+                                                                      segmentation_fn=segmentation_fn)
+
 
 #####Plotting
     # for GAME in games:
