@@ -317,7 +317,7 @@ def sanity_check( game, approach, _file_name, **kwargs):
             # In order for RISE to use the same Masks for all networks, we generate them once here
             if approach == "rise":
                 if _ == 3:
-                    argmax = og_saliency_fn(stacked_frames)
+                    og_saliency_map = og_saliency_fn(stacked_frames)
                     analyzer1.rise_masks = original_analyzer.rise_masks
                     analyzer1.masks_generated = True
                     analyzer2.rise_masks = original_analyzer.rise_masks
@@ -337,40 +337,40 @@ def sanity_check( game, approach, _file_name, **kwargs):
             action = np.argmax(np.squeeze(output))
 
             # analyze fully trained model
-            argmax = og_saliency_fn(my_input)
-            argmax = np.squeeze(argmax)
+            og_saliency_map = og_saliency_fn(my_input)
+            og_saliency_map = np.squeeze(og_saliency_map)
             # save the state
             # ave_raw_data(my_input,save_file_state, _)
 
             # create saliency map for model where the last layer is randomized
-            argmax1 = np.squeeze(saliency_fn_1(my_input, neuron_selection=action))
+            saliency_map_1 = np.squeeze(saliency_fn_1(my_input, neuron_selection=action))
             # calculate similarities and append to lists.
-            calc_sim(argmax, argmax1, pearson_list, ssim_list, spearman_list)
+            calc_sim(og_saliency_map, saliency_map_1, pearson_list, ssim_list, spearman_list)
             # save chosen action and the layer that was randomized in in this instance
             action_list.append(action)
             model_list.append(1)
 
             # see above but last two layers are randomized.
-            argmax2 = np.squeeze(saliency_fn_2(my_input, neuron_selection=action))
-            calc_sim(argmax, argmax2, pearson_list, ssim_list, spearman_list)
+            saliency_map_2 = np.squeeze(saliency_fn_2(my_input, neuron_selection=action))
+            calc_sim(og_saliency_map, saliency_map_2, pearson_list, ssim_list, spearman_list)
             action_list.append(action)
             model_list.append(2)
 
             # see above but last three layers are randomized.
-            argmax3 = np.squeeze(saliency_fn_3(my_input, neuron_selection=action))
-            calc_sim(argmax, argmax3, pearson_list, ssim_list, spearman_list)
+            saliency_map_3 = np.squeeze(saliency_fn_3(my_input, neuron_selection=action))
+            calc_sim(og_saliency_map, saliency_map_3, pearson_list, ssim_list, spearman_list)
             action_list.append(action)
             model_list.append(3)
 
             # see above but last four layers are randomized.
-            argmax4 = np.squeeze(saliency_fn_4(my_input, neuron_selection=action))
-            calc_sim(argmax, argmax4, pearson_list, ssim_list, spearman_list)
+            saliency_map_4 = np.squeeze(saliency_fn_4(my_input, neuron_selection=action))
+            calc_sim(og_saliency_map, saliency_map_4, pearson_list, ssim_list, spearman_list)
             action_list.append(action)
             model_list.append(4)
 
             # see above but all layers are randomized.
-            argmax5 = np.squeeze(saliency_fn_5(my_input, neuron_selection=action))
-            calc_sim(argmax, argmax5, pearson_list, ssim_list, spearman_list)
+            saliency_map_5 = np.squeeze(saliency_fn_5(my_input, neuron_selection=action))
+            calc_sim(og_saliency_map, saliency_map_5, pearson_list, ssim_list, spearman_list)
             action_list.append(action)
             model_list.append(5)
 
@@ -439,29 +439,40 @@ if __name__ == '__main__':
     #     file_name = APPROACH + '_' + str(PATCH_SIZE) + '_' + str(COLOR) + ".csv"
     #     sanity_check(game=GAME, approach=APPROACH, _file_name=file_name, patch_size=5, color = 0.5, use_softmax = True)
 
-    # # RISE
-    # APPROACH = "rise"
-    # for GAME in games:
-    #     PROBABILITY = 0.8
-    #     MASK_SIZE = 21
-    #     NUM_MASKS = 3000
-    #     file_name = APPROACH + '_' + "08" + '_' + str(MASK_SIZE) +  '_' + str(NUM_MASKS) + ".csv"
-    #     sanity_check(game=GAME, approach=APPROACH, _file_name=file_name, probability = PROBABILITY,
-    #                  mask_size = MASK_SIZE, number_of_mask=NUM_MASKS)
-
-    #### LIME
-    APPROACH = "lime"
+    ### RISE
+    APPROACH = "rise"
     for GAME in games:
-        file_name = "Lime_slic_80_100_0.csv"
-        segmentation_fn = (lambda x: seg.slic(x, n_segments=80, compactness=100, sigma=0))
-        sanity_check(game=GAME, approach=APPROACH, _file_name=file_name,hide_img=False,
-                                                                      positive_only=True,
-                                                                      segmentation_fn=segmentation_fn)
+        PROBABILITY = 0.8
+        MASK_SIZE = 18
+        NUM_MASKS = 3000
+        file_name = APPROACH + '_' + "08" + '_' + str(MASK_SIZE) +  '_' + str(NUM_MASKS) + ".csv"
+        sanity_check(game=GAME, approach=APPROACH, _file_name=file_name, probability = PROBABILITY,
+                     mask_size = MASK_SIZE, number_of_mask=NUM_MASKS)
 
-
-#####Plotting
+    ### LIME
+    # APPROACH = "lime"
     # for GAME in games:
-    #     dir_name = os.path.join("results", GAME)
+    #     file_name = "Lime_slic_80_100_0.csv"
+    #     segmentation_fn = (lambda x: seg.slic(x, n_segments=80, compactness=100, sigma=0))
+    #     sanity_check(game=GAME, approach=APPROACH, _file_name=file_name,hide_img=False,
+    #                                                                   positive_only=True,
+    #                                                                   segmentation_fn=segmentation_fn)
+    #     file_name = "Lime_quickshift_1_7_015"
+    #     segmentation_fn = (lambda x: seg.quickshift(x, kernel_size=1, max_dist=7, ratio=0.15, convert2lab=False))
+    #     sanity_check(game=GAME, approach=APPROACH, _file_name=file_name, hide_img=False,
+    #                                                                                positive_only=True,
+    #                                                                                segmentation_fn=segmentation_fn)
+    #
+    #     file_name = "Lime_felzenswalb_71_4e-1_0"
+    #     segmentation_fn = (
+    #         lambda x: seg.felzenszwalb(x, scale=71, sigma=0.4, min_size=0))
+    #     sanity_check(game=GAME, approach=APPROACH, _file_name=file_name, hide_img=False,
+    #              positive_only=True,
+    #              segmentation_fn=segmentation_fn)
+
+    ####Plotting
+    for GAME in games:
+        dir_name = os.path.join("results", GAME)
     #     APPROACH = "occl"
     #     PATCH_SIZE = 4
     #     COLOR = 0
@@ -487,3 +498,22 @@ if __name__ == '__main__':
     #     file_name = APPROACH + '_' + str(BLUR) + '_' + str(RAW_DIFF) + '_' + str(RADIUS) + ".csv"
     #     file_name = os.path.join(dir_name, file_name)
     #     plot_sanity_check_results(file_name)
+
+        # file_name = "Lime_slic_80_100_0.csv"
+        # file_name = os.path.join(dir_name, file_name)
+        # plot_sanity_check_results(file_name)
+        #
+        # file_name = "Lime_quickshift_1_7_015"
+        # file_name = os.path.join(dir_name, file_name)
+        # plot_sanity_check_results(file_name)
+        #
+        # file_name = "Lime_felzenswalb_71_4e-1_0"
+        # file_name = os.path.join(dir_name, file_name)
+        # plot_sanity_check_results(file_name)
+
+        APPROACH = "rise"
+        MASK_SIZE = 21
+        NUM_MASKS = 3000
+        file_name = APPROACH + '_' + "08" + '_' + str(MASK_SIZE) +  '_' + str(NUM_MASKS) + ".csv"
+        file_name = os.path.join(dir_name, file_name)
+        plot_sanity_check_results(file_name)
