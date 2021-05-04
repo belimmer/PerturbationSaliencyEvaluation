@@ -427,27 +427,27 @@ if __name__ == '__main__':
     #     file_name = APPROACH + '_' + str(BLUR) + '_' + str(RAW_DIFF) + '_' + str(RADIUS) + ".csv"
     #     sanity_check(game=GAME, approach=APPROACH, _file_name=file_name, r=RADIUS, blur=BLUR, raw_diff=RAW_DIFF)
 
-    # OCCLUSION SENSITIVITY
-    # APPROACH = "occl"
-    # PATCH_SIZE = 4
-    # for GAME in games:
-    #     COLOR = 0
-    #     file_name = APPROACH + '_' + str(PATCH_SIZE) + '_' + str(COLOR) + ".csv"
-    #     sanity_check(game=GAME, approach=APPROACH, _file_name=file_name, patch_size=5, color = COLOR, use_softmax = True)
-    #
-    #     COLOR = "gray"
-    #     file_name = APPROACH + '_' + str(PATCH_SIZE) + '_' + str(COLOR) + ".csv"
-    #     sanity_check(game=GAME, approach=APPROACH, _file_name=file_name, patch_size=5, color = 0.5, use_softmax = True)
+    ### OCCLUSION SENSITIVITY
+    APPROACH = "occl"
+    PATCH_SIZE = 4
+    for GAME in games:
+        COLOR = 0
+        file_name = APPROACH + '_' + str(PATCH_SIZE) + '_' + str(COLOR) + ".csv"
+        sanity_check(game=GAME, approach=APPROACH, _file_name=file_name, patch_size=PATCH_SIZE, color = COLOR, use_softmax = True)
+
+        COLOR = "gray"
+        file_name = APPROACH + '_' + str(PATCH_SIZE) + '_' + str(COLOR) + ".csv"
+        sanity_check(game=GAME, approach=APPROACH, _file_name=file_name, patch_size=4, color = 0.5, use_softmax = True)
 
     ### RISE
-    APPROACH = "rise"
-    for GAME in games:
-        PROBABILITY = 0.8
-        MASK_SIZE = 18
-        NUM_MASKS = 3000
-        file_name = APPROACH + '_' + "08" + '_' + str(MASK_SIZE) +  '_' + str(NUM_MASKS) + ".csv"
-        sanity_check(game=GAME, approach=APPROACH, _file_name=file_name, probability = PROBABILITY,
-                     mask_size = MASK_SIZE, number_of_mask=NUM_MASKS)
+    # APPROACH = "rise"
+    # for GAME in games:
+    #     PROBABILITY = 0.8
+    #     MASK_SIZE = 18
+    #     NUM_MASKS = 3000
+    #     file_name = APPROACH + '_' + "08" + '_' + str(MASK_SIZE) +  '_' + str(NUM_MASKS) + ".csv"
+    #     sanity_check(game=GAME, approach=APPROACH, _file_name=file_name, probability = PROBABILITY,
+    #                  mask_size = MASK_SIZE, number_of_mask=NUM_MASKS)
 
     ### LIME
     # APPROACH = "lime"
@@ -473,12 +473,13 @@ if __name__ == '__main__':
     ####Plotting
     for GAME in games:
         dir_name = os.path.join("results", GAME)
-    #     APPROACH = "occl"
-    #     PATCH_SIZE = 4
-    #     COLOR = 0
-    #     file_name = APPROACH + '_' + str(PATCH_SIZE) + '_' + str(COLOR) + ".csv"
-    #     file_name = os.path.join(dir_name, file_name)
-    #     plot_sanity_check_results(file_name)
+        APPROACH = "occl"
+        PATCH_SIZE = 4
+        COLOR = 0
+        file_name = APPROACH + '_' + str(PATCH_SIZE) + '_' + str(COLOR) + ".csv"
+        file_name = os.path.join(dir_name, file_name)
+        plot_sanity_check_results(file_name)
+
     #
     #
     #     APPROACH = "noise"
@@ -511,9 +512,9 @@ if __name__ == '__main__':
         # file_name = os.path.join(dir_name, file_name)
         # plot_sanity_check_results(file_name)
 
-        APPROACH = "rise"
-        MASK_SIZE = 21
-        NUM_MASKS = 3000
-        file_name = APPROACH + '_' + "08" + '_' + str(MASK_SIZE) +  '_' + str(NUM_MASKS) + ".csv"
-        file_name = os.path.join(dir_name, file_name)
-        plot_sanity_check_results(file_name)
+        # APPROACH = "rise"
+        # MASK_SIZE = 21
+        # NUM_MASKS = 3000
+        # file_name = APPROACH + '_' + "08" + '_' + str(MASK_SIZE) +  '_' + str(NUM_MASKS) + ".csv"
+        # file_name = os.path.join(dir_name, file_name)
+        # plot_sanity_check_results(file_name)

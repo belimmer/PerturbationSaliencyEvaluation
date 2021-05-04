@@ -1,2 +1,4 @@
 /venv
 /.idea
+/applications/atari/__pycache__
+/applications/atari/.idea
