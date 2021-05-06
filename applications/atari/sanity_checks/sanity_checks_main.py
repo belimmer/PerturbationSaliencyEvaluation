@@ -411,8 +411,8 @@ if __name__ == '__main__':
     games = ["pacman", "breakout", "spaceInvaders", "frostbite"]
 
     # NOISE SENSITIVITY
-    # APPROACH = "noise"
-    # RADIUS = 4
+    APPROACH = "noise"
+    RADIUS = 4
     # for GAME in games:
     #     BLUR = False
     #     RAW_DIFF = False
@@ -428,16 +428,16 @@ if __name__ == '__main__':
     #     sanity_check(game=GAME, approach=APPROACH, _file_name=file_name, r=RADIUS, blur=BLUR, raw_diff=RAW_DIFF)
 
     ### OCCLUSION SENSITIVITY
-    APPROACH = "occl"
-    PATCH_SIZE = 4
-    for GAME in games:
-        COLOR = 0
-        file_name = APPROACH + '_' + str(PATCH_SIZE) + '_' + str(COLOR) + ".csv"
-        sanity_check(game=GAME, approach=APPROACH, _file_name=file_name, patch_size=PATCH_SIZE, color = COLOR, use_softmax = True)
-
-        COLOR = "gray"
-        file_name = APPROACH + '_' + str(PATCH_SIZE) + '_' + str(COLOR) + ".csv"
-        sanity_check(game=GAME, approach=APPROACH, _file_name=file_name, patch_size=4, color = 0.5, use_softmax = True)
+    # APPROACH = "occl"
+    # PATCH_SIZE = 4
+    # for GAME in games:
+    #     COLOR = 0
+    #     file_name = APPROACH + '_' + str(PATCH_SIZE) + '_' + str(COLOR) + ".csv"
+    #     sanity_check(game=GAME, approach=APPROACH, _file_name=file_name, patch_size=PATCH_SIZE, color = COLOR, use_softmax = True)
+    #
+    #     COLOR = "gray"
+    #     file_name = APPROACH + '_' + str(PATCH_SIZE) + '_' + str(COLOR) + ".csv"
+    #     sanity_check(game=GAME, approach=APPROACH, _file_name=file_name, patch_size=4, color = 0.5, use_softmax = True)
 
     ### RISE
     # APPROACH = "rise"
@@ -450,35 +450,35 @@ if __name__ == '__main__':
     #                  mask_size = MASK_SIZE, number_of_mask=NUM_MASKS)
 
     ### LIME
-    # APPROACH = "lime"
-    # for GAME in games:
-    #     file_name = "Lime_slic_80_100_0.csv"
-    #     segmentation_fn = (lambda x: seg.slic(x, n_segments=80, compactness=100, sigma=0))
-    #     sanity_check(game=GAME, approach=APPROACH, _file_name=file_name,hide_img=False,
-    #                                                                   positive_only=True,
-    #                                                                   segmentation_fn=segmentation_fn)
-    #     file_name = "Lime_quickshift_1_7_015"
-    #     segmentation_fn = (lambda x: seg.quickshift(x, kernel_size=1, max_dist=7, ratio=0.15, convert2lab=False))
-    #     sanity_check(game=GAME, approach=APPROACH, _file_name=file_name, hide_img=False,
-    #                                                                                positive_only=True,
-    #                                                                                segmentation_fn=segmentation_fn)
-    #
-    #     file_name = "Lime_felzenswalb_71_4e-1_0"
-    #     segmentation_fn = (
-    #         lambda x: seg.felzenszwalb(x, scale=71, sigma=0.4, min_size=0))
-    #     sanity_check(game=GAME, approach=APPROACH, _file_name=file_name, hide_img=False,
-    #              positive_only=True,
-    #              segmentation_fn=segmentation_fn)
+    APPROACH = "lime"
+    for GAME in games:
+        file_name = "Lime_slic_80_100_0.csv"
+        segmentation_fn = (lambda x: seg.slic(x, n_segments=80, compactness=100, sigma=0))
+        sanity_check(game=GAME, approach=APPROACH, _file_name=file_name,hide_img=False,
+                                                                      positive_only=True,
+                                                                      segmentation_fn=segmentation_fn)
+        file_name = "Lime_quickshift_1_7_015"
+        segmentation_fn = (lambda x: seg.quickshift(x, kernel_size=1, max_dist=7, ratio=0.15, convert2lab=False))
+        sanity_check(game=GAME, approach=APPROACH, _file_name=file_name, hide_img=False,
+                                                                                   positive_only=True,
+                                                                                   segmentation_fn=segmentation_fn)
+
+        file_name = "Lime_felzenswalb_71_4e-1_0"
+        segmentation_fn = (
+            lambda x: seg.felzenszwalb(x, scale=71, sigma=0.4, min_size=0))
+        sanity_check(game=GAME, approach=APPROACH, _file_name=file_name, hide_img=False,
+                 positive_only=True,
+                 segmentation_fn=segmentation_fn)
 
     ####Plotting
     for GAME in games:
         dir_name = os.path.join("results", GAME)
-        APPROACH = "occl"
-        PATCH_SIZE = 4
-        COLOR = 0
-        file_name = APPROACH + '_' + str(PATCH_SIZE) + '_' + str(COLOR) + ".csv"
-        file_name = os.path.join(dir_name, file_name)
-        plot_sanity_check_results(file_name)
+        # APPROACH = "occl"
+        # PATCH_SIZE = 4
+        # COLOR = 0
+        # file_name = APPROACH + '_' + str(PATCH_SIZE) + '_' + str(COLOR) + ".csv"
+        # file_name = os.path.join(dir_name, file_name)
+        # plot_sanity_check_results(file_name)
 
     #
     #
