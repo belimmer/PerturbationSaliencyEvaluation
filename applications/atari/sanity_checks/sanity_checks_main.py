@@ -144,17 +144,18 @@ def calc_sim(learned_relevance, random_relevance, _pearson_list, _ssim_list, _sp
     spearman = max(spearman, test)
 
     # ssim_val = ssim(random_relevance,learned_relevance, multichannel=True)
-    ssim_val = ssim(random_relevance.flatten(), learned_relevance.flatten())
-    test = ssim(neg_random_relevance.flatten(), learned_relevance.flatten())
+    ssim_val = ssim(random_relevance.flatten(), learned_relevance.flatten(), data_range=1)
+    test = ssim(neg_random_relevance.flatten(), learned_relevance.flatten(), data_range=1)
     ssim_val = max(ssim_val, test)
 
-    random_hog = hog(random_relevance)
-    learned_hog = hog(learned_relevance)
+    kwargs = {"pixels_per_cell":(3,3)}
+    random_hog = hog(random_relevance, **kwargs)
+    learned_hog = hog(learned_relevance, **kwargs)
     pearson, _ = pearsonr(random_hog, learned_hog)
 
-    neg_random_hog = hog(neg_random_relevance)
+    neg_random_hog = hog(neg_random_relevance, **kwargs)
     test, _ = pearsonr(neg_random_hog, learned_hog)
-    pearson = max(pearson,test)
+    pearson = max(pearson, test)
 
 
     _pearson_list.append(pearson)
@@ -270,7 +271,7 @@ def sanity_check( game, approach, _file_name, **kwargs):
 
     if approach == "rise":
         og_saliency_fn = (
-            lambda x: original_analyzer.generate_rise_prediction(input=x, **kwargs))
+            lambda x, **kwargs2: original_analyzer.generate_rise_prediction(input=x, **kwargs, **kwargs2))
         saliency_fn_1 = (
             lambda x, **kwargs2: analyzer1.generate_rise_prediction(input=x, **kwargs, **kwargs2))
         saliency_fn_2 = (
@@ -337,7 +338,7 @@ def sanity_check( game, approach, _file_name, **kwargs):
             action = np.argmax(np.squeeze(output))
 
             # analyze fully trained model
-            og_saliency_map = og_saliency_fn(my_input)
+            og_saliency_map = og_saliency_fn(my_input, neuron_selection=action)
             og_saliency_map = np.squeeze(og_saliency_map)
             # save the state
             # ave_raw_data(my_input,save_file_state, _)
@@ -373,6 +374,18 @@ def sanity_check( game, approach, _file_name, **kwargs):
             calc_sim(og_saliency_map, saliency_map_5, pearson_list, ssim_list, spearman_list)
             action_list.append(action)
             model_list.append(5)
+
+            ## random tests uniform
+            test = np.random.rand(84, 84)
+            calc_sim(og_saliency_map, test, pearson_list, ssim_list, spearman_list)
+            action_list.append(action)
+            model_list.append(6)
+
+            ## random tests gaussian
+            test = np.random.normal(size=(84, 84))
+            calc_sim(og_saliency_map, test, pearson_list, ssim_list, spearman_list)
+            action_list.append(action)
+            model_list.append(7)
 
         stacked_frames, observations, reward, done, info = wrapper.step(action)
         # env.render()
@@ -411,8 +424,8 @@ if __name__ == '__main__':
     games = ["pacman", "breakout", "spaceInvaders", "frostbite"]
 
     # NOISE SENSITIVITY
-    APPROACH = "noise"
-    RADIUS = 4
+    # APPROACH = "noise"
+    # RADIUS = 4
     # for GAME in games:
     #     BLUR = False
     #     RAW_DIFF = False
@@ -440,81 +453,32 @@ if __name__ == '__main__':
     #     sanity_check(game=GAME, approach=APPROACH, _file_name=file_name, patch_size=4, color = 0.5, use_softmax = True)
 
     ### RISE
-    # APPROACH = "rise"
-    # for GAME in games:
-    #     PROBABILITY = 0.8
-    #     MASK_SIZE = 18
-    #     NUM_MASKS = 3000
-    #     file_name = APPROACH + '_' + "08" + '_' + str(MASK_SIZE) +  '_' + str(NUM_MASKS) + ".csv"
-    #     sanity_check(game=GAME, approach=APPROACH, _file_name=file_name, probability = PROBABILITY,
-    #                  mask_size = MASK_SIZE, number_of_mask=NUM_MASKS)
+    APPROACH = "rise"
+    for GAME in games:
+        PROBABILITY = 0.8
+        MASK_SIZE = 18
+        NUM_MASKS = 3000
+        file_name = APPROACH + '_' + "08" + '_' + str(MASK_SIZE) + '_' + str(NUM_MASKS) + ".csv"
+        sanity_check(game=GAME, approach=APPROACH, _file_name=file_name, probability = PROBABILITY,
+                     mask_size = MASK_SIZE, number_of_mask=NUM_MASKS)
 
     ### LIME
-    APPROACH = "lime"
-    for GAME in games:
-        file_name = "Lime_slic_80_100_0.csv"
-        segmentation_fn = (lambda x: seg.slic(x, n_segments=80, compactness=100, sigma=0))
-        sanity_check(game=GAME, approach=APPROACH, _file_name=file_name,hide_img=False,
-                                                                      positive_only=True,
-                                                                      segmentation_fn=segmentation_fn)
-        file_name = "Lime_quickshift_1_7_015"
-        segmentation_fn = (lambda x: seg.quickshift(x, kernel_size=1, max_dist=7, ratio=0.15, convert2lab=False))
-        sanity_check(game=GAME, approach=APPROACH, _file_name=file_name, hide_img=False,
-                                                                                   positive_only=True,
-                                                                                   segmentation_fn=segmentation_fn)
-
-        file_name = "Lime_felzenswalb_71_4e-1_0"
-        segmentation_fn = (
-            lambda x: seg.felzenszwalb(x, scale=71, sigma=0.4, min_size=0))
-        sanity_check(game=GAME, approach=APPROACH, _file_name=file_name, hide_img=False,
-                 positive_only=True,
-                 segmentation_fn=segmentation_fn)
-
-    ####Plotting
-    for GAME in games:
-        dir_name = os.path.join("results", GAME)
-        # APPROACH = "occl"
-        # PATCH_SIZE = 4
-        # COLOR = 0
-        # file_name = APPROACH + '_' + str(PATCH_SIZE) + '_' + str(COLOR) + ".csv"
-        # file_name = os.path.join(dir_name, file_name)
-        # plot_sanity_check_results(file_name)
-
+    # APPROACH = "lime"
+    # for GAME in games:
+    #     file_name = "Lime_slic_80_100_0.csv"
+    #     segmentation_fn = (lambda x: seg.slic(x, n_segments=80, compactness=100, sigma=0))
+    #     sanity_check(game=GAME, approach=APPROACH, _file_name=file_name,hide_img=False,
+    #                                                                   positive_only=True,
+    #                                                                   segmentation_fn=segmentation_fn)
+    #     file_name = "Lime_quickshift_1_7_015"
+    #     segmentation_fn = (lambda x: seg.quickshift(x, kernel_size=1, max_dist=7, ratio=0.15, convert2lab=False))
+    #     sanity_check(game=GAME, approach=APPROACH, _file_name=file_name, hide_img=False,
+    #                                                                                positive_only=True,
+    #                                                                                segmentation_fn=segmentation_fn)
     #
-    #
-    #     APPROACH = "noise"
-    #     RADIUS = 4
-    #     BLUR = False
-    #     RAW_DIFF = False
-    #     file_name = APPROACH + '_' + str(BLUR) + '_' + str(RAW_DIFF) + '_' + str(RADIUS) + ".csv"
-    #     file_name = os.path.join(dir_name, file_name)
-    #     plot_sanity_check_results(file_name)
-    #
-    #     BLUR = True
-    #     file_name = APPROACH + '_' + str(BLUR) + '_' + str(RAW_DIFF) + '_' + str(RADIUS) + ".csv"
-    #     file_name = os.path.join(dir_name, file_name)
-    #     plot_sanity_check_results(file_name)
-    #
-    #     RAW_DIFF = True
-    #     file_name = APPROACH + '_' + str(BLUR) + '_' + str(RAW_DIFF) + '_' + str(RADIUS) + ".csv"
-    #     file_name = os.path.join(dir_name, file_name)
-    #     plot_sanity_check_results(file_name)
-
-        # file_name = "Lime_slic_80_100_0.csv"
-        # file_name = os.path.join(dir_name, file_name)
-        # plot_sanity_check_results(file_name)
-        #
-        # file_name = "Lime_quickshift_1_7_015"
-        # file_name = os.path.join(dir_name, file_name)
-        # plot_sanity_check_results(file_name)
-        #
-        # file_name = "Lime_felzenswalb_71_4e-1_0"
-        # file_name = os.path.join(dir_name, file_name)
-        # plot_sanity_check_results(file_name)
-
-        # APPROACH = "rise"
-        # MASK_SIZE = 21
-        # NUM_MASKS = 3000
-        # file_name = APPROACH + '_' + "08" + '_' + str(MASK_SIZE) +  '_' + str(NUM_MASKS) + ".csv"
-        # file_name = os.path.join(dir_name, file_name)
-        # plot_sanity_check_results(file_name)
+    #     file_name = "Lime_felzenswalb_71_4e-1_0"
+    #     segmentation_fn = (
+    #         lambda x: seg.felzenszwalb(x, scale=71, sigma=0.4, min_size=0))
+    #     sanity_check(game=GAME, approach=APPROACH, _file_name=file_name, hide_img=False,
+    #              positive_only=True,
+    #              segmentation_fn=segmentation_fn)
