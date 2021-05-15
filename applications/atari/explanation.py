@@ -53,7 +53,7 @@ class explainer():
         return saliency_map
 
     def generate_lime_explanation(self, input, hide_img=True, positive_only=False, num_features=3, segmentation_fn=None
-                                  , neuron_selection=False):
+                                  , neuron_selection=False, num_samples = 1000):
         """
         Generates an explanation using the LIME approach.
 
@@ -78,7 +78,7 @@ class explainer():
             labels = (1,)
         explanation = lime_explainer.custom_explain_instance(input, self.model.predict, segmentation_fn=segmentation_fn,
                                                       top_labels=top_labels, hide_color=0,
-                                                      num_samples=1000, labels= labels)
+                                                      num_samples= num_samples, labels= labels)
         if neuron_selection is False:
             stacked_explanation, mask, ranked_mask = explanation.custom_get_image_and_mask(explanation.top_labels[0],
                                                                                        positive_only=positive_only,
