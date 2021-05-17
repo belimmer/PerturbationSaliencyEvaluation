@@ -118,301 +118,68 @@ if __name__ == '__main__':
 
         dir = os.path.join("results", GAME)
 
-        # save_dir_ = os.path.join(dir, "rise_08_18_3000")
-        # saliency_fn_ = (lambda x: (my_explainer.generate_rise_prediction(x,
-        #                                                                  probability=0.8,
-        #                                                                  use_softmax=True,
-        #                                                                  number_of_mask=3000,
-        #                                                                  mask_size=18)))
-        # test_one_approach(saliency_fn=saliency_fn_, model=model_, save_dir=save_dir_, _GAME=GAME)
-
-        save_dir_ = os.path.join(dir, "rise_08_22_3000")
+        save_dir_ = os.path.join(dir, "rise_08_18_3000")
         saliency_fn_ = (lambda x: (my_explainer.generate_rise_prediction(x,
                                                                          probability=0.8,
                                                                          use_softmax=True,
                                                                          number_of_mask=3000,
-                                                                         mask_size=22)))
+                                                                         mask_size=18)))
         test_one_approach(saliency_fn=saliency_fn_, model=model_, save_dir=save_dir_, _GAME=GAME)
 
-####### Main values used for all games:
-    # save_dir_ = os.path.join(dir, "Lime_slic_80_100_0")
-    # if not os.path.isdir(save_dir_):
-    #     os.makedirs(save_dir_)
-    # segmentation_fn = (lambda x: seg.slic(x, n_segments=80, compactness=100, sigma=0))
-    # saliency_fn_ = (lambda x: (my_explainer.generate_lime_explanation(input=x,
-    #                                                                   hide_img=False,
-    #                                                                   positive_only=True,
-    #                                                                   segmentation_fn=segmentation_fn))[2])
-    # test_one_approach(saliency_fn=saliency_fn_, model=model_, save_dir=save_dir_, _GAME=GAME)
-    #
-    # save_dir_ = os.path.join(dir, "Lime_quickshift_1_7_015")
-    # segmentation_fn = (lambda x: seg.quickshift(x, kernel_size=1, max_dist=7, ratio=0.15, convert2lab=False))
-    # saliency_fn_ = (lambda x: (my_explainer.generate_lime_explanation(input=x,
-    #                                                                   hide_img=False,
-    #                                                                   positive_only=True,
-    #                                                                   segmentation_fn=segmentation_fn))[2])
-    # test_one_approach(saliency_fn=saliency_fn_, model=model_, save_dir=save_dir_, _GAME=GAME)
-    #
-    # save_dir_ = os.path.join(dir, "Lime_felzenswalb_71_4e-1_0")
-    # segmentation_fn = (
-    #     lambda x: seg.felzenszwalb(x, scale=71, sigma=0.4, min_size=0))
-    # saliency_fn_ = (lambda x: (my_explainer.generate_lime_explanation(input=x,
-    #                                                                   hide_img=False,
-    #                                                                   positive_only=True,
-    #                                                                   segmentation_fn=segmentation_fn))[2])
-    # test_one_approach(saliency_fn=saliency_fn_, model=model_, save_dir=save_dir_, _GAME=GAME)
+
+        save_dir_ = os.path.join(dir, "Lime_slic_80_10_05_1000")
+        if not os.path.isdir(save_dir_):
+            os.makedirs(save_dir_)
+        segmentation_fn = (lambda x: seg.slic(x, n_segments=80, compactness=10, sigma=0.5))
+        saliency_fn_ = (lambda x: (my_explainer.generate_lime_explanation(input=x,
+                                                                          hide_img=False,
+                                                                          positive_only=True,
+                                                                          segmentation_fn=segmentation_fn,
+                                                                          num_samples=1000))[2])
+        test_one_approach(saliency_fn=saliency_fn_, model=model_, save_dir=save_dir_, _GAME=GAME)
+
+        save_dir_ = os.path.join(dir, "Lime_quickshift_1_4_0_3000")
+        segmentation_fn = (lambda x: seg.quickshift(x, kernel_size=1, max_dist=4, ratio=0, convert2lab=False))
+        saliency_fn_ = (lambda x: (my_explainer.generate_lime_explanation(input=x,
+                                                                          hide_img=False,
+                                                                          positive_only=True,
+                                                                          segmentation_fn=segmentation_fn,
+                                                                          num_samples=3000))[2])
+        test_one_approach(saliency_fn=saliency_fn_, model=model_, save_dir=save_dir_, _GAME=GAME)
+
+        save_dir_ = os.path.join(dir, "Lime_felzenswalb_1_025_2_2500")
+        segmentation_fn = (
+            lambda x: seg.felzenszwalb(x, scale=1, sigma=0.25, min_size=2))
+        saliency_fn_ = (lambda x: (my_explainer.generate_lime_explanation(input=x,
+                                                                          hide_img=False,
+                                                                          positive_only=True,
+                                                                          segmentation_fn=segmentation_fn,
+                                                                          num_samples=2500))[2])
+        test_one_approach(saliency_fn=saliency_fn_, model=model_, save_dir=save_dir_, _GAME=GAME)
 
 
+        save_dir_ = os.path.join(dir, "occl_4_0")
+        saliency_fn_ = (lambda x: (my_explainer.generate_occlusion_explanation(input=x, patch_size=4, color=0,
+                                                                               use_softmax=True)))
+        test_one_approach(saliency_fn=saliency_fn_, model=model_, save_dir=save_dir_, _GAME=GAME)
 
-    # save_dir_ = os.path.join(dir, "rise_08_21_3000")
-    # my_explainer = explainer(model=model_)
-    # saliency_fn_ = (lambda x: (my_explainer.generate_rise_prediction(x,
-    #                                                                  probability=0.8,
-    #                                                                  use_softmax=True,
-    #                                                                  number_of_mask=3000,
-    #                                                                  mask_size=21)))
-    # test_one_approach(saliency_fn=saliency_fn_, model=model_, save_dir=save_dir_, _GAME=GAME)
-    #
-    # save_dir_ = os.path.join(dir, "rise_08_23_3000")
-    # my_explainer = explainer(model=model_)
-    # saliency_fn_ = (lambda x: (my_explainer.generate_rise_prediction(x,
-    #                                                                  probability=0.8,
-    #                                                                  use_softmax=True,
-    #                                                                  number_of_mask=3000,
-    #                                                                  mask_size=23)))
-    # test_one_approach(saliency_fn=saliency_fn_, model=model_, save_dir=save_dir_, _GAME=GAME)
+        save_dir_ = os.path.join(dir, "occl_4_gray")
+        saliency_fn_ = (lambda x: (my_explainer.generate_occlusion_explanation(input=x, patch_size=4, color=0.5,
+                                                                               use_softmax=True)))
+        test_one_approach(saliency_fn=saliency_fn_, model=model_, save_dir=save_dir_, _GAME=GAME)
 
 
-    # save_dir_ = os.path.join(dir, "occl_4_0")
-    # saliency_fn_ = (lambda x: (my_explainer.generate_occlusion_explanation(input=x, patch_size=4, color=0,
-    #                                                                        use_softmax=True)))
-    # test_one_approach(saliency_fn=saliency_fn_, model=model_, save_dir=save_dir_, _GAME=GAME)
-    #
-    # save_dir_ = os.path.join(dir, "occl_4_gray")
-    # saliency_fn_ = (lambda x: (my_explainer.generate_occlusion_explanation(input=x, patch_size=4, color=0.5,
-    #                                                                        use_softmax=True)))
-    # test_one_approach(saliency_fn=saliency_fn_, model=model_, save_dir=save_dir_, _GAME=GAME)
-    #
-    #
-    # save_dir_ = os.path.join(dir, "noise_4_blur")
-    # saliency_fn_ = (lambda x: my_explainer.generate_greydanus_explanation(x, r=4, blur=True))
-    # test_one_approach(saliency_fn=saliency_fn_, model=model_, save_dir=save_dir_, _GAME=GAME)
-    #
-    # save_dir_ = os.path.join(dir, "noise_4_black")
-    # saliency_fn_ = (lambda x: my_explainer.generate_greydanus_explanation(x, r=4, blur=False))
-    # test_one_approach(saliency_fn=saliency_fn_, model=model_, save_dir=save_dir_, _GAME=GAME)
-    #
-    # save_dir_ = os.path.join(dir, "noise_4_blur_rawDiff")
-    # saliency_fn_ = (lambda x: my_explainer.generate_greydanus_explanation(x, r=4, blur=True, raw_diff=True))
-    # test_one_approach(saliency_fn=saliency_fn_, model=model_, save_dir=save_dir_, _GAME=GAME)
+        save_dir_ = os.path.join(dir, "noise_4_blur")
+        saliency_fn_ = (lambda x: my_explainer.generate_greydanus_explanation(x, r=4, blur=True))
+        test_one_approach(saliency_fn=saliency_fn_, model=model_, save_dir=save_dir_, _GAME=GAME)
 
-####### values tested on pacman:
-    # save_dir_ = os.path.join(dir, "Lime_patches_8_6")
-    # segmentation_fn = (
-    #     lambda x: rectangle_segmentation(x, (8, 6)))
-    # saliency_fn_ = (lambda x: (my_explainer.generate_lime_explanation(input=x,
-    #                                                                  hide_img=False,
-    #                                                                  positive_only=True,
-    #                                                                  segmentation_fn=segmentation_fn))[2])
-    #
-    # test_one_approach(saliency_fn=saliency_fn_, model=model_, save_dir=save_dir_, _GAME=GAME)
-    #
-    # save_dir_ = os.path.join(dir, "Lime_patches_9_9")
-    # segmentation_fn = (
-    #     lambda x: rectangle_segmentation(x, (9, 9)))
-    # saliency_fn_ = (lambda x: (my_explainer.generate_lime_explanation(input=x,
-    #                                                                   hide_img=False,
-    #                                                                   positive_only=True,
-    #                                                                   segmentation_fn=segmentation_fn))[2])
-    #
-    # test_one_approach(saliency_fn=saliency_fn_, model=model_, save_dir=save_dir_, _GAME=GAME)
-    #
+        save_dir_ = os.path.join(dir, "noise_4_black")
+        saliency_fn_ = (lambda x: my_explainer.generate_greydanus_explanation(x, r=4, blur=False))
+        test_one_approach(saliency_fn=saliency_fn_, model=model_, save_dir=save_dir_, _GAME=GAME)
 
-    # save_dir_ = os.path.join(dir, "Lime_felzenswalb_71_4e-1_0")
-    # segmentation_fn = (
-    #     lambda x: seg.felzenszwalb(x, scale=71, sigma=0.4, min_size=0))
-    # saliency_fn_ = (lambda x: (my_explainer.generate_lime_explanation(input=x,
-    #                                                                   hide_img=False,
-    #                                                                   positive_only=True,
-    #                                                                   segmentation_fn=segmentation_fn))[2])
-    #
-    # test_one_approach(saliency_fn=saliency_fn_, model=model_, save_dir=save_dir_, _GAME=GAME)
-
-    # save_dir_ = os.path.join(dir, "occl_1_0")
-    # saliency_fn_ = (lambda x: (my_explainer.generate_occlusion_explanation(input=x, patch_size=1, color=0,
-    #                                                                        use_softmax=True)))
-    # test_one_approach(saliency_fn=saliency_fn_, model=model_, save_dir=save_dir_, _GAME=GAME)
-    #
-    # save_dir_ = os.path.join(dir, "occl_2_0")
-    # saliency_fn_ = (lambda x: (my_explainer.generate_occlusion_explanation(input=x, patch_size=2, color=0,
-    #                                                                        use_softmax=True)))
-    # test_one_approach(saliency_fn=saliency_fn_, model=model_, save_dir=save_dir_, _GAME=GAME)
-    #
-    # save_dir_ = os.path.join(dir, "occl_3_0")
-    # saliency_fn_ = (lambda x: (my_explainer.generate_occlusion_explanation(input=x, patch_size=3, color=0,
-    #                                                                        use_softmax=True)))
-    # test_one_approach(saliency_fn=saliency_fn_, model=model_, save_dir=save_dir_, _GAME=GAME)
-
-    # save_dir_ = os.path.join(dir, "occl_4_0")
-    # saliency_fn_ = (lambda x: (my_explainer.generate_occlusion_explanation(input=x, patch_size= 4, color=0,
-    #                                                                         use_softmax=True)))
-    # test_one_approach(saliency_fn=saliency_fn_, model=model_, save_dir=save_dir_, _GAME=GAME)
-    #
-    # save_dir_ = os.path.join(dir, "occl_5_0")
-    # saliency_fn_ = (lambda x: (my_explainer.generate_occlusion_explanation(input=x, patch_size=5, color=0,
-    #                                                                        use_softmax=True)))
-    # test_one_approach(saliency_fn=saliency_fn_, model=model_, save_dir=save_dir_, _GAME=GAME)
-    #
-    # save_dir_ = os.path.join(dir, "occl_6_0")
-    # saliency_fn_ = (lambda x: (my_explainer.generate_occlusion_explanation(input=x, patch_size=6, color=0,
-    #                                                                        use_softmax=True)))
-    # test_one_approach(saliency_fn=saliency_fn_, model=model_, save_dir=save_dir_, _GAME=GAME)
-    #
-    # save_dir_ = os.path.join(dir, "occl_7_0")
-    # saliency_fn_ = (lambda x: (my_explainer.generate_occlusion_explanation(input=x, patch_size=7, color=0,
-    #                                                                        use_softmax=True)))
-    # test_one_approach(saliency_fn=saliency_fn_, model=model_, save_dir=save_dir_, _GAME=GAME)
-    #
-    # save_dir_ = os.path.join(dir, "occl_8_0")
-    # saliency_fn_ = (lambda x: (my_explainer.generate_occlusion_explanation(input=x, patch_size=8, color=0,
-    #                                                                        use_softmax=True)))
-    # test_one_approach(saliency_fn=saliency_fn_, model=model_, save_dir=save_dir_, _GAME=GAME)
-    #
-    # save_dir_ = os.path.join(dir, "occl_9_0")
-    # saliency_fn_ = (lambda x: (my_explainer.generate_occlusion_explanation(input=x, patch_size=9, color=0,
-    #                                                                        use_softmax=True)))
-    # test_one_approach(saliency_fn=saliency_fn_, model=model_, save_dir=save_dir_, _GAME=GAME)
-    #
-    # save_dir_ = os.path.join(dir, "occl_10_0")
-    # saliency_fn_ = (lambda x: (my_explainer.generate_occlusion_explanation(input=x, patch_size=10, color=0,
-    #                                                                        use_softmax=True)))
-    # test_one_approach(saliency_fn=saliency_fn_, model=model_, save_dir=save_dir_, _GAME=GAME)
-
-    # save_dir_ = os.path.join(dir, "rise_08_16_3000")
-    # saliency_fn_ = (lambda x: (my_explainer.generate_rise_prediction(x,
-    #                                                      probability=0.8,
-    #                                                      use_softmax=True,
-    #                                                      number_of_mask=3000,
-    #                                                      mask_size=16)))
-    # test_one_approach(saliency_fn=saliency_fn_, model=model_, save_dir=save_dir_, _GAME=GAME)
-
-    # save_dir_ = os.path.join(dir, "rise_08_21_3000")
-    # saliency_fn_ = (lambda x: (my_explainer.generate_rise_prediction(x,
-    #                                                      probability=0.8,
-    #                                                      use_softmax=True,
-    #                                                      number_of_mask=3000,
-    #                                                      mask_size=21)))
-    # test_one_approach(saliency_fn=saliency_fn_, model=model_, save_dir=save_dir_, _GAME=GAME)
-    #
-    # save_dir_ = os.path.join(dir, "rise_09_16_1500")
-    # my_explainer = explainer(model=model_)
-    # saliency_fn_ = (lambda x: (my_explainer.generate_rise_prediction(x,
-    #                                                                  probability=0.9,
-    #                                                                  use_softmax=True,
-    #                                                                  number_of_mask=1500,
-    #                                                                  mask_size=16)))
-    # test_one_approach(saliency_fn=saliency_fn_, model=model_, save_dir=save_dir_, _GAME=GAME)
-    #
-    # save_dir_ = os.path.join(dir, "rise_06_16_3000")
-    # my_explainer = explainer(model=model_)
-    # saliency_fn_ = (lambda x: (my_explainer.generate_rise_prediction(x,
-    #                                                                  probability=0.6,
-    #                                                                  use_softmax=True,
-    #                                                                  number_of_mask=3000,
-    #                                                                  mask_size=16)))
-    # test_one_approach(saliency_fn=saliency_fn_, model=model_, save_dir=save_dir_, _GAME=GAME)
-
-    # save_dir_ = os.path.join(dir, "noise_1_blur")
-    # saliency_fn_ = (lambda x: my_explainer.generate_greydanus_explanation(x,r=1, blur= True))
-    # test_one_approach(saliency_fn=saliency_fn_, model=model_, save_dir=save_dir_, _GAME=GAME)
-    # #
-    # save_dir_ = os.path.join(dir, "noise_2_blur")
-    # saliency_fn_ = (lambda x: my_explainer.generate_greydanus_explanation(x, r=2, blur=True))
-    # test_one_approach(saliency_fn=saliency_fn_, model=model_, save_dir=save_dir_, _GAME=GAME)
-    #
-    # save_dir_ = os.path.join(dir, "noise_3_blur")
-    # saliency_fn_ = (lambda x: my_explainer.generate_greydanus_explanation(x, r=3, blur=True))
-    # test_one_approach(saliency_fn=saliency_fn_, model=model_, save_dir=save_dir_, _GAME=GAME)
-    # #
-    # save_dir_ = os.path.join(dir, "noise_4_blur")
-    # saliency_fn_ = (lambda x: my_explainer.generate_greydanus_explanation(x, r=4, blur=True))
-    # test_one_approach(saliency_fn=saliency_fn_, model=model_, save_dir=save_dir_, _GAME=GAME)
-    #
-    # save_dir_ = os.path.join(dir, "noise_5_blur")
-    # saliency_fn_ = (lambda x: my_explainer.generate_greydanus_explanation(x, r=5, blur=True))
-    # test_one_approach(saliency_fn=saliency_fn_, model=model_, save_dir=save_dir_, _GAME=GAME)
-    # #
-    # save_dir_ = os.path.join(dir, "noise_6_blur")
-    # saliency_fn_ = (lambda x: my_explainer.generate_greydanus_explanation(x, r=6, blur=True))
-    # test_one_approach(saliency_fn=saliency_fn_, model=model_, save_dir=save_dir_, _GAME=GAME)
-    # #
-    # save_dir_ = os.path.join(dir, "noise_7_blur")
-    # saliency_fn_ = (lambda x: my_explainer.generate_greydanus_explanation(x, r=7, blur=True))
-    # test_one_approach(saliency_fn=saliency_fn_, model=model_, save_dir=save_dir_, _GAME=GAME)
-    # #
-    # save_dir_ = os.path.join(dir, "noise_8_blur")
-    # saliency_fn_ = (lambda x: my_explainer.generate_greydanus_explanation(x, r=8, blur=True))
-    # test_one_approach(saliency_fn=saliency_fn_, model=model_, save_dir=save_dir_, _GAME=GAME)
-    # save_dir_ = os.path.join(dir, "noise_9_blur")
-    # saliency_fn_ = (lambda x: my_explainer.generate_greydanus_explanation(x, r=9, blur=True))
-    # test_one_approach(saliency_fn=saliency_fn_, model=model_, save_dir=save_dir_, _GAME=GAME)
-
-    # save_dir_ = os.path.join(dir, "noise_1_black")
-    # saliency_fn_ = (lambda x: my_explainer.generate_greydanus_explanation(x, r=1, blur=False))
-    # test_one_approach(saliency_fn=saliency_fn_, model=model_, save_dir=save_dir_, _GAME=GAME)
-    #
-    # save_dir_ = os.path.join(dir, "noise_2_black")
-    # saliency_fn_ = (lambda x: my_explainer.generate_greydanus_explanation(x, r=2, blur=False))
-    # test_one_approach(saliency_fn=saliency_fn_, model=model_, save_dir=save_dir_, _GAME=GAME)
-    #
-    # save_dir_ = os.path.join(dir, "noise_3_black")
-    # saliency_fn_ = (lambda x: my_explainer.generate_greydanus_explanation(x, r=3, blur=False))
-    # test_one_approach(saliency_fn=saliency_fn_, model=model_, save_dir=save_dir_, _GAME=GAME)
-    #
-    # save_dir_ = os.path.join(dir, "noise_4_black")
-    # saliency_fn_ = (lambda x: my_explainer.generate_greydanus_explanation(x, r=4, blur=False))
-    # test_one_approach(saliency_fn=saliency_fn_, model=model_, save_dir=save_dir_, _GAME=GAME)
-    #
-    # save_dir_ = os.path.join(dir, "noise_5_black")
-    # saliency_fn_ = (lambda x: my_explainer.generate_greydanus_explanation(x, r=5, blur=False))
-    # test_one_approach(saliency_fn=saliency_fn_, model=model_, save_dir=save_dir_, _GAME=GAME)
-    #
-    # save_dir_ = os.path.join(dir, "noise_6_black")
-    # saliency_fn_ = (lambda x: my_explainer.generate_greydanus_explanation(x, r=6, blur=False))
-    # test_one_approach(saliency_fn=saliency_fn_, model=model_, save_dir=save_dir_, _GAME=GAME)
-    #
-    # save_dir_ = os.path.join(dir, "noise_7_black")
-    # saliency_fn_ = (lambda x: my_explainer.generate_greydanus_explanation(x, r=7, blur=False))
-    # test_one_approach(saliency_fn=saliency_fn_, model=model_, save_dir=save_dir_, _GAME=GAME)
-    #
-    # save_dir_ = os.path.join(dir, "noise_8_black")
-    # saliency_fn_ = (lambda x: my_explainer.generate_greydanus_explanation(x, r=8, blur=False))
-    # test_one_approach(saliency_fn=saliency_fn_, model=model_, save_dir=save_dir_, _GAME=GAME)
-    #
-    # save_dir_ = os.path.join(dir, "noise_9_black")
-    # saliency_fn_ = (lambda x: my_explainer.generate_greydanus_explanation(x, r=9, blur=True))
-    # test_one_approach(saliency_fn=saliency_fn_, model=model_, save_dir=save_dir_, _GAME=GAME)
-    #
-    # save_dir_ = os.path.join(dir, "noise_3_blur_rawDiff")
-    # saliency_fn_ = (lambda x: my_explainer.generate_greydanus_explanation(x, r=3, blur=True, raw_diff = True))
-    # test_one_approach(saliency_fn=saliency_fn_, model=model_, save_dir=save_dir_, _GAME=GAME)
-    #
-    # save_dir_ = os.path.join(dir, "noise_4_blur_rawDiff")
-    # saliency_fn_ = (lambda x: my_explainer.generate_greydanus_explanation(x, r=4, blur=True, raw_diff = True))
-    # test_one_approach(saliency_fn=saliency_fn_, model=model_, save_dir=save_dir_, _GAME=GAME)
-    #
-    # save_dir_ = os.path.join(dir, "noise_3_black_rawDiff")
-    # saliency_fn_ = (lambda x: my_explainer.generate_greydanus_explanation(x, r=3, blur=False, raw_diff = True))
-    # test_one_approach(saliency_fn=saliency_fn_, model=model_, save_dir=save_dir_, _GAME=GAME)
-    #
-    # save_dir_ = os.path.join(dir, "noise_4_black_rawDiff")
-    # saliency_fn_ = (lambda x: my_explainer.generate_greydanus_explanation(x, r=4, blur=False, raw_diff = True))
-    # test_one_approach(saliency_fn=saliency_fn_, model=model_, save_dir=save_dir_, _GAME=GAME)
-
-    # save_dir_ = os.path.join(dir, "occl_4_gray")
-    # saliency_fn_ = (lambda x: (my_explainer.generate_occlusion_explanation(input=x, patch_size=4, color=0.5,
-    #                                                                        use_softmax=True)))
-    # test_one_approach(saliency_fn=saliency_fn_, model=model_, save_dir=save_dir_, _GAME=GAME)
+        save_dir_ = os.path.join(dir, "noise_4_blur_rawDiff")
+        saliency_fn_ = (lambda x: my_explainer.generate_greydanus_explanation(x, r=4, blur=True, raw_diff=True))
+        test_one_approach(saliency_fn=saliency_fn_, model=model_, save_dir=save_dir_, _GAME=GAME)
 
 
 

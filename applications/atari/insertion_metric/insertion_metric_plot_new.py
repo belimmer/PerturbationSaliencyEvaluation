@@ -26,7 +26,7 @@ def auc(arr):
     :return:
     """
     auc = arr.sum() / (arr.shape[0])
-    print(auc)
+    print(round(auc,3))
     return auc
 
 def load_scores(dir_name):
@@ -71,77 +71,19 @@ def load_scores(dir_name):
 
 approaches = [
     # comparison values:
-    # "Lime_quickshift_1_7_015",
-    # "Lime_slic_80_100_0",
-    # "Lime_felzenswalb_71_4e-1_0",
-    #
-    # "occl_4_0",
+    "Lime_quickshift_1_4_0_3000",
+    # "Lime_slic_80_10_05_1000",
+    # "Lime_felzenswalb_1_025_2_2500",
+
+    "occl_4_0",
     # "occl_4_gray",
-    #
-    #
-    "rise_08_16_3000",
-    "rise_08_21_3000",
-    "rise_08_22_3000",
-    "rise_08_23_3000",
+
     "rise_08_18_3000",
-    #
-    # "noise_4_blur",
-    # "noise_4_black",
-    # "noise_4_blur_rawDiff",
 
-
-
-    # "Lime_quickshift_1_7_015",
-    # "Lime_slic_80_100_0",
-    # "Lime_patches_8_6",
-    # "Lime_patches_9_9",
-    # "Lime_felzenswalb_71_4e-1_0",
-
-    # "occl_1_0",
-    # "occl_2_0",
-    # "occl_3_0",
-    # "occl_4_0",
-    # "occl_5_0",
-    # "occl_6_0",
-    # "occl_7_0",
-    # "occl_8_0",
-    # "occl_9_0",
-    # "occl_10_0",
-
-    # "rise_09_16_1500",
-    # "rise_06_16_3000",
-    # "rise_08_16_3000",
-    # "rise_08_21_3000",
-    #"rise_08_23_3000",
-
-
-    # "noise_1_blur",
-    # "noise_2_blur",
-    # "noise_3_blur",
-    # "noise_4_blur",
-    # "noise_5_blur",
-    # "noise_6_blur",
-    # "noise_7_blur",
-    # "noise_8_blur",
-    # "noise_9_blur",
-    #
-    # "noise_1_black",
-    # "noise_2_black",
-    # "noise_3_black",
-    # "noise_4_black",
-    # "noise_5_black",
-    # "noise_6_black",
-    # "noise_7_black",
-    # "noise_8_black",
-    # "noise_9_black",
-
-    # "noise_3_blur_rawDiff",
-    # "noise_4_blur_rawDiff",
-    # "noise_3_black_rawDiff",
-    # "noise_4_black_rawDiff",
+    "noise_4_blur",
+    #"noise_4_black",
+    #"noise_4_blur_rawDiff",
               ]
-
-
 
 
 # Plot settings
@@ -175,7 +117,7 @@ for appr in data:
 plt.legend(bbox_to_anchor=(0., 1.02, 1., .102), loc='lower left',
           ncol=2, mode="expand", borderaxespad=0.)
 plt.tight_layout()
-#plt.savefig(fname="figures/backup_" + dir_name_ + "/" + dir_name_ + "_insertion.png")
+plt.savefig(fname="figures/" + game + "_insertion.png")
 plt.show()
 
 
