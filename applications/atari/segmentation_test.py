@@ -27,7 +27,7 @@ def test_parameters(_states, _segmentation_fn):
 
 if __name__ == '__main__':
     state_path = "HIGHLIGHTS_states/"
-    segmentation = "slic"
+    segmentation = "felzenswalb"
 
     states = []
 
@@ -62,11 +62,11 @@ if __name__ == '__main__':
         best_aucs = []
         best_parameters = []
         for i in range(0, 6):
-            for j in range(0, 5):
+            for j in range(0, 9):
                 for k in range(0, 6):
                     scale = 1 + 20 * i
                     sigma = j * 0.25
-                    min_size = 4 * k
+                    min_size = k
 
                     segmentation_fn = (
                         lambda x: seg.felzenszwalb(x, scale=scale, sigma=sigma, min_size=min_size))
