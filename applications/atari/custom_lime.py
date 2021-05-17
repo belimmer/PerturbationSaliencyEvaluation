@@ -13,7 +13,6 @@ from functools import partial
 from sklearn.utils import check_random_state
 import copy
 from skimage.color import gray2rgb
-from lime.wrappers.scikit_image import SegmentationAlgorithm
 import sklearn
 from progressbar import ProgressBar
 
@@ -63,13 +62,11 @@ class CustomImageExplanation(object):
         image = self.image
         exp = self.local_exp[label]
         mask = np.zeros(segments.shape, segments.dtype)
-        ranked_mask = np.zeros(segments.shape, segments.dtype)
+        ranked_mask = np.zeros(segments.shape)
 
         sorted_segments = sorted(exp, key=lambda x: x[1])
-        rank = 0
         for f in sorted_segments:
-            ranked_mask[segments == f[0]] = rank
-            rank += 1
+            ranked_mask[segments == f[0]] = f[1]
         if hide_rest:
             temp = np.zeros(self.image.shape)
         else:
