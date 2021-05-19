@@ -15,24 +15,11 @@ Finally we compare the generated saliency of all models.
 import numpy as np
 import os
 import matplotlib.pyplot as plt
-from scipy.stats import pearsonr, spearmanr
-from skimage.metrics import structural_similarity as ssim
-from skimage.feature import hog
 import pandas as pd
-import keras
 import seaborn as sns
-import gym
-import skimage.segmentation as seg
 
-from applications.atari.custom_atari_wrapper import atari_wrapper
-from applications.atari.explanation import explainer
 
-import tensorflow as tf
-import keras.backend as K
-
-import timeit
-
-def show_and_save_plt(ax ,file_name, y_label=None, ylim =None, label_size = 18, tick_size = 14):
+def show_and_save_plt(ax ,file_name, y_label=None, ylim =None, label_size = 18, tick_size = 14, only_plot= False):
     """
     Shows and saves the given plot and defines the appearance of the final plot.
     :param ax: the plot to be saved.
@@ -65,6 +52,13 @@ def show_and_save_plt(ax ,file_name, y_label=None, ylim =None, label_size = 18, 
 
     plt.xticks(fontsize=tick_size)
     plt.yticks(fontsize=tick_size)
+
+    if only_plot:
+        ax.set(xticklabels=[])
+        ax.set(xlabel=None)
+        ax.tick_params(bottom=False)
+        ax.set(yticklabels=[])
+        ax.set(ylabel=None)
 
     file_name = os.path.join('figures/sanity_checks', file_name)
     if not (os.path.isdir(file_name)):
@@ -103,8 +97,21 @@ def combine_game(file_name, games):
 
     return data_frame
 
-def plot_sanity_checks(data_frame, directory):
-    # Create plots
+
+def add_approach(file_name, approach_name, games, df= pd.DataFrame()):
+        temp_frame = combine_game(file_name, games)
+        temp_frame = temp_frame.drop(temp_frame[temp_frame.rand_layer > 5].index)
+        temp_frame["approach"] = approach_name
+        if df.empty:
+            return temp_frame
+        else:
+            return df.append(temp_frame)
+
+
+def plot_sanity_checks(data_frame, directory, only_plot = False):
+    # remove the random saliency values
+    data_frame = data_frame.drop(data_frame[data_frame.rand_layer > 5].index)
+
     data_frame['rand_layer'] = data_frame.rand_layer.apply(
         lambda x: 'fc_2' if x == 1 else 'fc_1' if x == 2 else 'conv_3' if x == 3 else 'conv_2' if x == 4 else
         'conv_1' if x ==5 else "uniform" if x == 6 else "gaussian" if x == 7 else "what?")
@@ -112,18 +119,18 @@ def plot_sanity_checks(data_frame, directory):
     sns.set(palette='colorblind', style="whitegrid")
 
     ax = sns.barplot(x='rand_layer', y='pearson', data=data_frame)
-    show_and_save_plt(ax, os.path.join(directory,'pearson'), label_size=28, tick_size=20, y_label='Pearson', ylim=(0, 1))
+    show_and_save_plt(ax, os.path.join(directory,'pearson'), label_size=28, tick_size=40, y_label='Pearson', ylim=(0, 1), only_plot=only_plot)
     ax = sns.barplot(x='rand_layer', y='ssim', data=data_frame)
     plt.xlabel(None)
-    show_and_save_plt(ax, os.path.join(directory,'ssim'), label_size=28, tick_size=20, y_label='Ssim', ylim=(0, 1))
+    show_and_save_plt(ax, os.path.join(directory,'ssim'), label_size=28, tick_size=40, y_label='Ssim', ylim=(0, 1), only_plot=only_plot)
     ax = sns.barplot(x='rand_layer', y='spearman', data=data_frame)
     plt.xlabel(None)
-    show_and_save_plt(ax, os.path.join(directory,'spearman'), label_size=28, tick_size=20, y_label='Spearman', ylim=(0, 1))
+    show_and_save_plt(ax, os.path.join(directory,'spearman'), label_size=28, tick_size=40, y_label='Spearman', ylim=(0, 1), only_plot=only_plot)
 
 
 def plot_combined_results(file_name, games, directory):
     data_frame = combine_game(file_name, games)
-    plot_sanity_checks(data_frame, directory)
+    plot_sanity_checks(data_frame, directory, only_plot=True)
 
 
 def plot_sanity_check_results(file_name):
@@ -143,83 +150,104 @@ if __name__ == '__main__':
     file_name = APPROACH + '_' + str(PATCH_SIZE) + '_' + str(COLOR) + ".csv"
     plot_combined_results(file_name, games, file_name.replace(".csv", ""))
 
+    combined_df = add_approach(file_name, approach_name="Occlusion", games=games)
+
     APPROACH = "noise"
     RADIUS = 4
     BLUR = False
     RAW_DIFF = False
     file_name = APPROACH + '_' + str(BLUR) + '_' + str(RAW_DIFF) + '_' + str(RADIUS) + ".csv"
     plot_combined_results(file_name, games, file_name.replace(".csv", ""))
+    combined_df = add_approach(file_name, approach_name="Noise Black", games=games, df=combined_df)
 
     BLUR = True
     file_name = APPROACH + '_' + str(BLUR) + '_' + str(RAW_DIFF) + '_' + str(RADIUS) + ".csv"
     plot_combined_results(file_name, games, file_name.replace(".csv", ""))
+    combined_df = add_approach(file_name, approach_name="Noise Blur", games=games, df=combined_df)
 
     RAW_DIFF = True
     file_name = APPROACH + '_' + str(BLUR) + '_' + str(RAW_DIFF) + '_' + str(RADIUS) + ".csv"
     plot_combined_results(file_name, games, file_name.replace(".csv", ""))
+    combined_df = add_approach(file_name, approach_name="Noise Blur Diff", games=games, df=combined_df)
 
-    file_name = "Lime_slic_80_100_0.csv"
-    plot_combined_results(file_name, games, file_name.replace(".csv", ""))
+    # file_name = "Lime_slic_80_10_05_1000.csv"
+    # plot_combined_results(file_name, games, file_name.replace(".csv", ""))
+    # combined_df = add_approach(file_name, approach_name="LIME", games=games, df=combined_df)
 
-    file_name = "Lime_quickshift_1_7_015"
+    file_name = "Lime_quickshift_1_4_0_3000"
     plot_combined_results(file_name, games, file_name.replace(".csv", ""))
+    combined_df = add_approach(file_name, approach_name="LIME quickshift", games=games, df=combined_df)
 
-    file_name = "Lime_felzenswalb_71_4e-1_0"
-    plot_combined_results(file_name, games, file_name.replace(".csv", ""))
+    # file_name = "Lime_felzenswalb_1_025_2_2500"
+    # plot_combined_results(file_name, games, file_name.replace(".csv", ""))
+    # combined_df = add_approach(file_name, approach_name="LIME felz", games=games, df=combined_df)
 
     APPROACH = "rise"
     MASK_SIZE = 18
     NUM_MASKS = 3000
     file_name = APPROACH + '_' + "08" + '_' + str(MASK_SIZE) + '_' + str(NUM_MASKS) + ".csv"
     plot_combined_results(file_name, games, file_name.replace(".csv", ""))
+    combined_df = add_approach(file_name, approach_name="RISE", games=games, df=combined_df)
+
+    directory = "combined"
+    plot_params = {"ci": 99, "err_style": "band", "markers": True, "markersize" : 10, "legend":False}
+    ax = sns.lineplot(x='rand_layer', y='pearson', hue="approach", style="approach", data=combined_df, **plot_params)
+    show_and_save_plt(ax, os.path.join(directory, 'pearson'), label_size=28, tick_size=40, y_label='Pearson',
+                     ylim=(0, 1), only_plot=True)
+
+    ax = sns.lineplot(x='rand_layer', y='spearman', hue="approach", style="approach", data=combined_df, **plot_params)
+    show_and_save_plt(ax, os.path.join(directory, 'spearman'), label_size=28, tick_size=40, y_label='Spearman',
+                      ylim=(0, 1), only_plot=True)
+
+    ax = sns.lineplot(x='rand_layer', y='ssim', hue="approach", style="approach", data=combined_df, **plot_params)
+    show_and_save_plt(ax, os.path.join(directory, 'ssim'), label_size=28, tick_size=40, y_label='SSIM',
+                      ylim=(0, 1), only_plot=True)
+
+    plot_params["legend"] = "full"
+    ax = sns.lineplot(x='rand_layer', y='ssim', hue="approach", style="approach", data=combined_df, **plot_params)
+
+    handles = ax.get_legend_handles_labels()
+    handles[0].pop(0)
+    handles[1].pop(0)
+    fig = plt.figure(figsize=(8.3,0.4))
+    fig.legend(handles[0],handles[1], loc="upper left", frameon=True, ncol= len(handles[0]))
+    plt.savefig(fname=os.path.join("figures","sanity_legend.png"))
+    plt.show()
 
 
+    ## LIME results
+    file_name = "Lime_slic_80_10_05_1000.csv"
+    plot_combined_results(file_name, games, file_name.replace(".csv", ""))
+    combined_df = add_approach(file_name, approach_name="LIME SLIC", games=games)
+    file_name = "Lime_quickshift_1_4_0_3000"
+    plot_combined_results(file_name, games, file_name.replace(".csv", ""))
+    combined_df = add_approach(file_name, approach_name="LIME Quickshift", games=games, df=combined_df)
 
-    # ####Plotting
-    # for GAME in games:
-    #     dir_name = os.path.join("results", GAME)
-    #     APPROACH = "occl"
-    #     PATCH_SIZE = 4
-    #     COLOR = 0
-    #     file_name = APPROACH + '_' + str(PATCH_SIZE) + '_' + str(COLOR) + ".csv"
-    #     file_name = os.path.join(dir_name, file_name)
-    #     plot_sanity_check_results(file_name)
+    file_name = "Lime_felzenswalb_1_025_2_2500"
+    plot_combined_results(file_name, games, file_name.replace(".csv", ""))
+    combined_df = add_approach(file_name, approach_name="LIME Felzenszwalb", games=games, df=combined_df)
 
-    #
-    #
-    #     APPROACH = "noise"
-    #     RADIUS = 4
-    #     BLUR = False
-    #     RAW_DIFF = False
-    #     # file_name = APPROACH + '_' + str(BLUR) + '_' + str(RAW_DIFF) + '_' + str(RADIUS) + ".csv"
-    #     # file_name = os.path.join(dir_name, file_name)
-    #     # plot_sanity_check_results(file_name)
-    #
-    #     BLUR = True
-    #     # file_name = APPROACH + '_' + str(BLUR) + '_' + str(RAW_DIFF) + '_' + str(RADIUS) + ".csv"
-    #     # file_name = os.path.join(dir_name, file_name)
-    #     # plot_sanity_check_results(file_name)
-    #
-    #     RAW_DIFF = True
-    #     file_name = APPROACH + '_' + str(BLUR) + '_' + str(RAW_DIFF) + '_' + str(RADIUS) + ".csv"
-    #     file_name = os.path.join(dir_name, file_name)
-    #     plot_sanity_check_results(file_name)
+    directory = "combined_LIME"
+    plot_params = {"ci": 99, "err_style": "band", "markers": True, "markersize": 10, "legend": False}
+    ax = sns.lineplot(x='rand_layer', y='pearson', hue="approach", style="approach", data=combined_df, **plot_params)
+    show_and_save_plt(ax, os.path.join(directory, 'pearson'), label_size=28, tick_size=40, y_label='Pearson',
+                      ylim=(0, 1), only_plot=True)
 
-        # file_name = "Lime_slic_80_100_0.csv"
-        # file_name = os.path.join(dir_name, file_name)
-        # plot_sanity_check_results(file_name)
-        #
-        # file_name = "Lime_quickshift_1_7_015"
-        # file_name = os.path.join(dir_name, file_name)
-        # plot_sanity_check_results(file_name)
-        #
-        # file_name = "Lime_felzenswalb_71_4e-1_0"
-        # file_name = os.path.join(dir_name, file_name)
-        # plot_sanity_check_results(file_name)
+    ax = sns.lineplot(x='rand_layer', y='spearman', hue="approach", style="approach", data=combined_df, **plot_params)
+    show_and_save_plt(ax, os.path.join(directory, 'spearman'), label_size=28, tick_size=40, y_label='Spearman',
+                      ylim=(0, 1), only_plot=True)
 
-        # APPROACH = "rise"
-        # MASK_SIZE = 18
-        # NUM_MASKS = 3000
-        # file_name = APPROACH + '_' + "08" + '_' + str(MASK_SIZE) +  '_' + str(NUM_MASKS) + ".csv"
-        # file_name = os.path.join(dir_name, file_name)
-        # plot_sanity_check_results(file_name)
+    ax = sns.lineplot(x='rand_layer', y='ssim', hue="approach", style="approach", data=combined_df, **plot_params)
+    show_and_save_plt(ax, os.path.join(directory, 'ssim'), label_size=28, tick_size=40, y_label='SSIM',
+                      ylim=(0, 1), only_plot=True)
+
+    plot_params["legend"] = "full"
+    ax = sns.lineplot(x='rand_layer', y='ssim', hue="approach", style="approach", data=combined_df, **plot_params)
+
+    handles = ax.get_legend_handles_labels()
+    handles[0].pop(0)
+    handles[1].pop(0)
+    fig = plt.figure(figsize=(5.3, 0.4))
+    fig.legend(handles[0], handles[1], loc="upper left", frameon=True, ncol=len(handles[0]))
+    plt.savefig(fname=os.path.join("figures", "lime_sanity_legend.png"))
+    plt.show()
