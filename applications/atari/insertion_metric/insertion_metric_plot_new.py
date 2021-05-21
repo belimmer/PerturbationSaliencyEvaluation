@@ -7,6 +7,8 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 import os
 
+from applications.atari.sanity_checks.sanity_checks_plot import show_and_save_plt
+
 
 # Normalizing formula from https://arxiv.org/pdf/2001.00396.pdf
 # did not use this since we wanted to show the confidence range
@@ -69,57 +71,128 @@ def load_scores(dir_name):
     # auc(x_normalized)
     return x
 
-approaches = [
-    # comparison values:
-    "Lime_quickshift_1_4_0_3000",
-    # "Lime_slic_80_10_05_1000",
-    # "Lime_felzenswalb_1_025_2_2500",
 
-    "occl_4_0",
-    # "occl_4_gray",
+if __name__ == '__main__':
+    #GAMES = ["pacman", "breakout", "frostbite", "spaceInvaders"]
+    GAMES = ["pacman"]
 
-    "rise_08_18_3000",
+    NOISE_LIME = False
 
-    "noise_4_blur",
-    #"noise_4_black",
-    #"noise_4_blur_rawDiff",
-              ]
+    for game in GAMES:
+        if game == "pacman":
+            approaches = [
+                "occl_4_0",
+                # "occl_4_gray",
+
+                # "noise_4_blur",
+                "noise_4_black",
+                # "noise_4_blur_rawDiff",
+
+                "rise_08_18_3000",
+
+                "Lime_quickshift_1_4_0_3000",
+                # "Lime_slic_80_10_05_1000",
+                # "Lime_felzenswalb_1_025_2_2500"
+            ]
+        elif game == "breakout":
+            approaches = [
+                "occl_4_0",
+                # "occl_4_gray",
+
+                # "noise_4_blur",
+                # "noise_4_black",
+                "noise_4_blur_rawDiff",
+
+                "rise_08_18_3000",
+
+                # "Lime_quickshift_1_4_0_3000",
+                # "Lime_slic_80_10_05_1000",
+                "Lime_felzenswalb_1_025_2_2500"
+            ]
+        elif game == "frostbite":
+            approaches = [
+                "occl_4_0",
+                # "occl_4_gray",
+
+                "noise_4_blur",
+                #"noise_4_black",
+                #"noise_4_blur_rawDiff",
+
+                "rise_08_18_3000",
+
+                "Lime_quickshift_1_4_0_3000",
+                # "Lime_slic_80_10_05_1000",
+                # "Lime_felzenswalb_1_025_2_2500",
+                          ]
+        elif game == "spaceInvaders":
+            approaches = [
+                "occl_4_0",
+                # "occl_4_gray",
+
+                # "noise_4_blur",
+                # "noise_4_black",
+                "noise_4_blur_rawDiff",
+
+                "rise_08_18_3000",
+
+                # "Lime_quickshift_1_4_0_3000",
+                # "Lime_slic_80_10_05_1000",
+                "Lime_felzenswalb_1_025_2_2500"
+            ]
+
+        if NOISE_LIME:
+            approaches = [
+                "noise_4_blur",
+                "noise_4_black",
+                "noise_4_blur_rawDiff",
+                "Lime_quickshift_1_4_0_3000",
+                "Lime_slic_80_10_05_1000",
+                "Lime_felzenswalb_1_025_2_2500"
+            ]
 
 
-# Plot settings
-# to generate graph with normalization iterate over x_normalized
-data = []
-game = "frostbite"
-for approach in approaches:
-    dir_name_ = os.path.join(game, approach)
-    scores = load_scores(dir_name_)
-    data.append(scores)
+        # Plot settings
+        # to generate graph with normalization iterate over x_normalized
+        data = []
+        for approach in approaches:
+            dir_name_ = os.path.join(game, approach)
+            scores = load_scores(dir_name_)
+            data.append(scores)
 
-data = np.asarray(data)
+        data = np.asarray(data)
 
-sns.set(palette='colorblind', style="whitegrid")
-#plt.figure(figsize=(10, 7))
-#plt.xlim(-0.1, 1.1)
-max = data.max()
-min = data.min()
-plt.ylim(min - (np.abs(min) * 0.1), max + (np.abs(max) * 0.05))
-#plt.xlabel("percentage of deleted pixels")
-#plt.ylabel("classification probability")
-z = np.linspace(0,1,85)
-tick_size = 20
-plt.xticks(fontsize=tick_size)
-plt.yticks(fontsize=tick_size)
+        sns.set(palette='colorblind', style="whitegrid")
+        #plt.figure(figsize=(10, 7))
+        plt.xlim(-0.01, 1.01)
+        max = data.max()
+        min = data.min()
+        plt.ylim(min - (np.abs(min) * 0.1), max + (np.abs(max) * 0.05))
+        #plt.xlabel("percentage of deleted pixels")
+        #plt.ylabel("classification probability")
+        z = np.linspace(0,1,85)
+        tick_size = 25
+        plt.xticks(fontsize=0)
+        plt.yticks(fontsize=tick_size)
 
-i = 0
-for appr in data:
-    plt.plot(z, appr, label=approaches[i])
-    i += 1
-plt.legend(bbox_to_anchor=(0., 1.02, 1., .102), loc='lower left',
-          ncol=2, mode="expand", borderaxespad=0.)
-plt.tight_layout()
-plt.savefig(fname="figures/" + game + "_insertion.png")
-plt.show()
+        i = 0
+        for appr in data:
+            plt.plot(z, appr, label=approaches[i])
+            i += 1
+        # plt.legend(bbox_to_anchor=(0., 1.02, 1., .102), loc='lower left',
+        #           ncol=2, mode="expand", borderaxespad=0.)
+        handles = plt.gca().get_legend_handles_labels()
+        plt.tight_layout()
+        plt.savefig(fname="figures/" + game + "_insertion.png")
+        plt.show()
 
+        labels = ["Occlusion Sensitivity", "Noise Sensitivity", "RISE", "LIME"]
+        fig = plt.figure(figsize=(6.2, 0.4))
+        if NOISE_LIME:
+            labels = ["NS Blur", "NS BLack", "NS Blur Diff", "LIME Quickshift", "LIME SLIC", "LIME Felzenszwalb"]
+            fig = plt.figure(figsize=(10, 0.4))
+        fig.legend(handles[0],labels, loc="upper left", frameon=True, ncol= len(handles[0]))
+        plt.savefig(fname=os.path.join("figures","insertion_legend.png"))
+        plt.show()
 
 
 
