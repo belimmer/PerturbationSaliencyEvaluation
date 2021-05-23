@@ -6,6 +6,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 import seaborn as sns
 import os
+import pandas as pd
 
 from applications.atari.sanity_checks.sanity_checks_plot import show_and_save_plt
 
@@ -56,25 +57,19 @@ def load_scores(dir_name):
     x = np.concatenate((x, x_9), axis=0)
     # average the values for each step of the insertion game over all tested inputs
     number = x.shape[0]
-    x = np.sum(x, axis=0)
-    x = x / number
+    x_temp = np.sum(x, axis=0)
+    x_temp = x_temp / number
 
     print(dir_name)
     # AUC for raw softmax values
-    auc(x)
+    auc(x_temp)
 
-    # # normalize prediction values to have minimum 0 and maximum 1
-    # x_normalized = normalize(x)
-    #
-    # # AUC for normalized values
-    # print("normalized Auc")
-    # auc(x_normalized)
     return x
 
 
 if __name__ == '__main__':
-    #GAMES = ["pacman", "breakout", "frostbite", "spaceInvaders"]
-    GAMES = ["pacman"]
+    GAMES = ["pacman", "breakout", "frostbite", "spaceInvaders"]
+    #GAMES = ["pacman"]
 
     NOISE_LIME = False
 
@@ -152,46 +147,58 @@ if __name__ == '__main__':
 
 
         # Plot settings
-        # to generate graph with normalization iterate over x_normalized
-        data = []
+        first = True
         for approach in approaches:
             dir_name_ = os.path.join(game, approach)
             scores = load_scores(dir_name_)
-            data.append(scores)
-
-        data = np.asarray(data)
+            temp_data = pd.DataFrame()
+            temp_scores = []
+            temp_indizes = []
+            for run in scores:
+                for i in range(len(run)):
+                    temp_scores.append(run[i])
+                    temp_indizes.append(i)
+            temp_data["scores"] = temp_scores
+            temp_data["index"] = temp_indizes
+            temp_data["approach"] = approach
+            temp_data = temp_data.reset_index()
+            if first:
+                data = temp_data
+                first = False
+            else:
+                data = data.append(temp_data)
 
         sns.set(palette='colorblind', style="whitegrid")
-        #plt.figure(figsize=(10, 7))
-        plt.xlim(-0.01, 1.01)
-        max = data.max()
-        min = data.min()
-        plt.ylim(min - (np.abs(min) * 0.1), max + (np.abs(max) * 0.05))
-        #plt.xlabel("percentage of deleted pixels")
-        #plt.ylabel("classification probability")
-        z = np.linspace(0,1,85)
-        tick_size = 25
-        plt.xticks(fontsize=0)
-        plt.yticks(fontsize=tick_size)
+        plot_params = {"ci": 99, "err_style": "band", "markersize": 10, "legend": False}
+        ax = sns.lineplot(x="index", y='scores', hue="approach", style="approach", data=data,
+                          **plot_params)
+        ax.set(xticklabels=[])
+        ax.set(xlabel=None)
+        # ax.tick_params(bottom=False)
+        # ax.set(yticklabels=[])
+        ax.set(ylabel=None)
 
-        i = 0
-        for appr in data:
-            plt.plot(z, appr, label=approaches[i])
-            i += 1
-        # plt.legend(bbox_to_anchor=(0., 1.02, 1., .102), loc='lower left',
-        #           ncol=2, mode="expand", borderaxespad=0.)
-        handles = plt.gca().get_legend_handles_labels()
-        plt.tight_layout()
-        plt.savefig(fname="figures/" + game + "_insertion.png")
-        plt.show()
+        dir_name = "insertion_top"
+        if NOISE_LIME:
+            dir_name = "insertion_noise_and_lime"
+        show_and_save_plt(ax, os.path.join(dir_name, game + "_insertion.png"), label_size=28, tick_size=25, y_label=None,
+                          only_plot=False)
+
+        plot_params["legend"] = "full"
+        ax = sns.lineplot(x="index", y='scores', hue="approach", style="approach", data=data,
+                          **plot_params)
+        handles = ax.get_legend_handles_labels()
+        handles = handles[0]
+        handles.pop(0)
+
 
         labels = ["Occlusion Sensitivity", "Noise Sensitivity", "RISE", "LIME"]
         fig = plt.figure(figsize=(6.2, 0.4))
         if NOISE_LIME:
-            labels = ["NS Blur", "NS BLack", "NS Blur Diff", "LIME Quickshift", "LIME SLIC", "LIME Felzenszwalb"]
+            labels = ["NS Original", "NS Black", "NS Chosen Action", "LIME Quickshift", "LIME SLIC", "LIME Felzenszwalb"]
             fig = plt.figure(figsize=(10, 0.4))
-        fig.legend(handles[0],labels, loc="upper left", frameon=True, ncol= len(handles[0]))
-        plt.savefig(fname=os.path.join("figures","insertion_legend.png"))
+        fig.legend(handles, labels, loc="upper left", frameon=True, ncol= len(handles))
+        plt.savefig(fname=os.path.join("figures", dir_name, "insertion_legend.png"))
         plt.show()
 
 
