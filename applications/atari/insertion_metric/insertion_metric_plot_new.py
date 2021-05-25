@@ -79,60 +79,60 @@ if __name__ == '__main__':
                 "occl_4_0",
                 # "occl_4_gray",
 
-                # "noise_4_blur",
-                "noise_4_black",
-                # "noise_4_blur_rawDiff",
-
                 "rise_08_18_3000",
 
                 "Lime_quickshift_1_4_0_3000",
                 # "Lime_slic_80_10_05_1000",
-                # "Lime_felzenswalb_1_025_2_2500"
+                # "Lime_felzenswalb_1_025_2_2500",
+
+                # "noise_4_blur",
+                "noise_4_black",
+                # "noise_4_blur_rawDiff"
             ]
         elif game == "breakout":
             approaches = [
                 "occl_4_0",
                 # "occl_4_gray",
 
-                # "noise_4_blur",
-                # "noise_4_black",
-                "noise_4_blur_rawDiff",
-
                 "rise_08_18_3000",
 
                 # "Lime_quickshift_1_4_0_3000",
                 # "Lime_slic_80_10_05_1000",
-                "Lime_felzenswalb_1_025_2_2500"
+                "Lime_felzenswalb_1_025_2_2500",
+
+                # "noise_4_blur",
+                # "noise_4_black",
+                "noise_4_blur_rawDiff"
             ]
         elif game == "frostbite":
             approaches = [
                 "occl_4_0",
                 # "occl_4_gray",
 
-                "noise_4_blur",
-                #"noise_4_black",
-                #"noise_4_blur_rawDiff",
-
                 "rise_08_18_3000",
 
                 "Lime_quickshift_1_4_0_3000",
                 # "Lime_slic_80_10_05_1000",
                 # "Lime_felzenswalb_1_025_2_2500",
+
+                "noise_4_blur",
+                #"noise_4_black",
+                #"noise_4_blur_rawDiff"
                           ]
         elif game == "spaceInvaders":
             approaches = [
                 "occl_4_0",
                 # "occl_4_gray",
 
-                # "noise_4_blur",
-                # "noise_4_black",
-                "noise_4_blur_rawDiff",
-
                 "rise_08_18_3000",
 
                 # "Lime_quickshift_1_4_0_3000",
                 # "Lime_slic_80_10_05_1000",
-                "Lime_felzenswalb_1_025_2_2500"
+                "Lime_felzenswalb_1_025_2_2500",
+
+                # "noise_4_blur",
+                # "noise_4_black",
+                "noise_4_blur_rawDiff"
             ]
 
         if NOISE_LIME:
@@ -192,7 +192,7 @@ if __name__ == '__main__':
         handles.pop(0)
 
 
-        labels = ["Occlusion Sensitivity", "Noise Sensitivity", "RISE", "LIME"]
+        labels = ["Occlusion Sensitivity", "RISE", "LIME", "Noise Sensitivity"]
         fig = plt.figure(figsize=(6.2, 0.4))
         if NOISE_LIME:
             labels = ["NS Original", "NS Black", "NS Chosen Action", "LIME Quickshift", "LIME SLIC", "LIME Felzenszwalb"]
