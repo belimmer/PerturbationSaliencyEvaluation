@@ -1,4 +1,4 @@
-""" Module for testing LIME with different segmentation algorithms"""
+""" Module for testing different parameters for the perturbation-based saliency maps."""
 
 import skimage.segmentation as seg
 import numpy as np

@@ -1,6 +1,6 @@
 from applications.affectnet.vgg_face_batch_norm import get_model, get_preprocess
 import cv2
-from applications.atari.explanation import explainer, create_saliency_image, create_lime_image
+from applications.atari.explanation import explainer, create_saliency_image
 import applications.atari.rise as rise
 import timeit
 import os

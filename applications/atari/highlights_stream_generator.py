@@ -4,7 +4,10 @@
     A folder 'stream' is created whose subfolders contain all the states, visually displayed frames, Q-values,
     saliency maps and features (output of the second to last layer).
 
-    Modified from https://github.com/HuTobias/HIGHLIGHTS-LRP
+    This module was adapted from a module in https://github.com/HuTobias/HIGHLIGHTS-LRP
+    Date: 2020
+    commit: 834bf795ee37a74b611beb79851438e9a8afd676
+    License: MIT
 """
 
 

@@ -1,16 +1,18 @@
+"""
+This module does the insertion metric experiments and measures the run-time of the saliency map generation approaches.
+"""
+
 from applications.atari.custom_atari_wrapper import atari_wrapper
 from applications.atari.explanation import explainer
 import gym
 import keras
 import numpy as np
-import datetime
 import skimage.segmentation as seg
 import os
-from applications.atari.custom_lime import rectangle_segmentation
 
 
 def test_one_approach(saliency_fn, model, save_dir, _GAME):
-    """Do the test for one saliency method."""
+    """Do the insertion metric test for one saliency method."""
     # create save dir if it does not exist yet
     if not os.path.isdir(save_dir):
         os.makedirs(save_dir)
