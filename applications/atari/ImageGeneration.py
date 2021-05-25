@@ -131,17 +131,34 @@ if __name__ == '__main__':
     state_output_path = "output_highlight_states/"
     model = keras.models.load_model('models/MsPacman_5M_ingame_reward.h5')
 
-    approach = "lime"
-    segmentation = "felzenswalb"
+    GAME = "pacman"
+
+    if GAME == "frostbite":
+        state_path = os.path.join(state_path, GAME) + "/"
+        state_output_path = os.path.join(state_output_path, GAME) + "/"
+        model = keras.models.load_model('models/FrostbiteIngame_5M.h5')
+    if GAME == "SpaceInvaders":
+        state_path = os.path.join(state_path, GAME) + "/"
+        state_output_path = os.path.join(state_output_path, GAME) + "/"
+        model = keras.models.load_model('models/SpaceInvadersIngame_5M.h5')
+    if GAME == "Breakout":
+        state_path = os.path.join(state_path, GAME) + "/"
+        state_output_path = os.path.join(state_output_path, GAME) + "/"
+        model = keras.models.load_model('models/BreakoutIngame_5M.h5')
+
+
+
+    approach = "noise"
+    segmentation = "quickshift"
 
     if approach == "rise":
         kwargs = {"probability" : 0.8, "mask_size" : 18, "number_of_mask" : 3000}
     if approach == "occl":
-        # kwargs = {"patch_size": 4, "color": 0, "use_softmax": True}
-        kwargs = {"patch_size": 4, "color": 0.5, "use_softmax": True}
+        kwargs = {"patch_size": 4, "color": 0, "use_softmax": True}
+        # kwargs = {"patch_size": 4, "color": 0.5, "use_softmax": True}
     if approach == "noise":
         BLUR = True
-        RAW_DIFF = True
+        RAW_DIFF = False
         kwargs = {"r":4, "blur":BLUR, "raw_diff": RAW_DIFF}
     if approach == "lime":
         kwargs = {"hide_img": False, "positive_only": True, "num_features": 5}
