@@ -1,5 +1,5 @@
 """
-Module for plotting the insertion metric results
+Module for calculating the mean run-time per saliency map approach
 """
 
 import numpy as np
