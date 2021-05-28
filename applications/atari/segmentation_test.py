@@ -1,4 +1,4 @@
-""" Module for testing LIME with different segmentation algorithms"""
+""" Module for visually testing LIME with different segmentation algorithms"""
 
 import skimage.segmentation as seg
 import numpy as np
@@ -8,13 +8,13 @@ import re
 import timeit
 
 
-def test_quickshift(input, **kwargs):
-    test = seg.quickshift(input, convert2lab=False, **kwargs)
-    plt.imshow(seg.mark_boundaries(input[:, :, 3], test))
-    plt.show()
-
-
 def test_parameters(_states, _segmentation_fn):
+    """
+    show examples of the given segmentation function
+    :param _states: the states to segmented
+    :param _segmentation_fn: the segmentation function
+    :return: nothing, the examples are shown
+    """
     state = _states[0]
     input = np.squeeze(state[0])
     start = timeit.default_timer()

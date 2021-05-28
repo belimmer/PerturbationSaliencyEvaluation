@@ -1,9 +1,9 @@
-'''
+"""
 This module was adapted from a module in https://github.com/HuTobias/HIGHLIGHTS-LRP
 Date: 2020
 commit: 834bf795ee37a74b611beb79851438e9a8afd676
 License: MIT
-'''
+"""
 
 import cv2
 import numpy as np
@@ -18,7 +18,7 @@ class atari_wrapper():
         self.zeros = np.zeros((self.width,self.height))
         self.stacked_frame = np.stack((self.zeros,self.zeros,self.zeros,self.zeros), axis=-1)
         self.noop_action = 0
-        self.fire_reset = False #Wenn breakout gespielt wird True, sonst False
+        self.fire_reset = False # True for games that need the button to be pressed at the beginning
         self.lives = 0
 
     def preprocess_frame(self,frame):

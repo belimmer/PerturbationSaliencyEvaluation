@@ -32,18 +32,24 @@ def auc(arr):
     print(round(auc,3))
     return auc
 
+
 def load_scores(dir_name):
+    """
+    load the saved results and print the mean AUC.
+    :param dir_name: the directoy where the results are saved
+    :return: the combined results in one array
+    """
     # load the different data checkpoints
-    x_0 = np.load(file="insertion_metric/results/" + dir_name + "/pred_100.npy", allow_pickle=True)
-    x_1 = np.load(file="insertion_metric/results/" + dir_name + "/pred_200.npy", allow_pickle=True)
-    x_2 = np.load(file="insertion_metric/results/" + dir_name + "/pred_300.npy", allow_pickle=True)
-    x_3 = np.load(file="insertion_metric/results/" + dir_name + "/pred_400.npy", allow_pickle=True)
-    x_4 = np.load(file="insertion_metric/results/" + dir_name + "/pred_500.npy", allow_pickle=True)
-    x_5 = np.load(file="insertion_metric/results/" + dir_name + "/pred_600.npy", allow_pickle=True)
-    x_6 = np.load(file="insertion_metric/results/" + dir_name + "/pred_700.npy", allow_pickle=True)
-    x_7 = np.load(file="insertion_metric/results/" + dir_name + "/pred_800.npy", allow_pickle=True)
-    x_8 = np.load(file="insertion_metric/results/" + dir_name + "/pred_900.npy", allow_pickle=True)
-    x_9 = np.load(file="insertion_metric/results/" + dir_name + "/pred_1000.npy", allow_pickle=True)
+    x_0 = np.load(file="results/" + dir_name + "/pred_100.npy", allow_pickle=True)
+    x_1 = np.load(file="results/" + dir_name + "/pred_200.npy", allow_pickle=True)
+    x_2 = np.load(file="results/" + dir_name + "/pred_300.npy", allow_pickle=True)
+    x_3 = np.load(file="results/" + dir_name + "/pred_400.npy", allow_pickle=True)
+    x_4 = np.load(file="results/" + dir_name + "/pred_500.npy", allow_pickle=True)
+    x_5 = np.load(file="results/" + dir_name + "/pred_600.npy", allow_pickle=True)
+    x_6 = np.load(file="results/" + dir_name + "/pred_700.npy", allow_pickle=True)
+    x_7 = np.load(file="results/" + dir_name + "/pred_800.npy", allow_pickle=True)
+    x_8 = np.load(file="results/" + dir_name + "/pred_900.npy", allow_pickle=True)
+    x_9 = np.load(file="results/" + dir_name + "/pred_1000.npy", allow_pickle=True)
 
     # combine the data checkpoints to one array
     x = np.concatenate((x_0, x_1), axis=0)
@@ -60,8 +66,8 @@ def load_scores(dir_name):
     x_temp = np.sum(x, axis=0)
     x_temp = x_temp / number
 
+    # print the AUC
     print(dir_name)
-    # AUC for raw softmax values
     auc(x_temp)
 
     return x
@@ -69,8 +75,8 @@ def load_scores(dir_name):
 
 if __name__ == '__main__':
     GAMES = ["pacman", "breakout", "frostbite", "spaceInvaders"]
-    #GAMES = ["pacman"]
 
+    # Do you want to generate plots for all Noise Sensitivity and LIME variants?
     NOISE_LIME = True
 
     for game in GAMES:

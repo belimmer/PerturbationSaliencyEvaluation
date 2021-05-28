@@ -106,7 +106,7 @@ if __name__ == '__main__':
 
     for GAME in ["pacman", "breakout", "spaceInvaders", "frostbite"]:
 
-        # model needs to be defined outside of the insertion metric since it is needed for the different saliency fn
+        # model needs to be defined outside of the insertion metric since it is needed for the different saliency fns
         if GAME == "pacman":
             model_ = keras.models.load_model('../models/MsPacman_5M_ingame_reward.h5')
         elif GAME == "breakout":

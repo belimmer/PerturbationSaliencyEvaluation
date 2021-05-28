@@ -1,5 +1,10 @@
 """
 Module for creating example saliency map images for the HIGHLIGHT states.
+
+Some functions are adapted from https://github.com/HuTobias/HIGHLIGHTS-LRP
+Date: 2020
+commit: 834bf795ee37a74b611beb79851438e9a8afd676
+License: MIT
 """
 
 import keras

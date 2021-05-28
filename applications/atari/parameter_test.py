@@ -2,7 +2,6 @@
 
 import skimage.segmentation as seg
 import numpy as np
-import matplotlib.pyplot as plt
 import os
 import re
 import keras
@@ -15,13 +14,19 @@ from applications.atari.custom_lime import rectangle_segmentation
 import pandas as pd
 
 
-def test_quickshift(input, **kwargs):
-    test = seg.quickshift(input, convert2lab=False, **kwargs)
-    plt.imshow(seg.mark_boundaries(input[:, :, 3], test))
-    plt.show()
-
-
 def test_parameters(_states, _segmentation_fn, parameters, _best_aucs, _best_parameters, _times, _save_dir, num_samples=1000):
+    """
+    Helper Function to do the parameter test for LIME segmentation algorithms
+    :param _states: the states the should be tested
+    :param _segmentation_fn: the segmentation function used by LIME
+    :param parameters: the parameters used in the segmenation function
+    :param _best_aucs: the list that stores the auc values
+    :param _best_parameters: the list that stores the parameters
+    :param _times: the list that stores the time values
+    :param _save_dir: the directory where the results should be saved
+    :param num_samples: the number of training samples for LIME
+    :return: nothing, the results are saved
+    """
     sum = 0
     time = 0
     for state in _states:

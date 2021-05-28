@@ -163,8 +163,15 @@ def calc_sim(learned_relevance, random_relevance, _pearson_list, _ssim_list, _sp
     _spearman_list.append(spearman)
 
 
-#def sanity_check(BLUR, RAW_DIFF, RADIUS, GAME):
 def sanity_check( game, approach, _file_name, **kwargs):
+    """
+    calculate the sanity check for 1000 steps of the agent
+    :param game: the game environment for the sanity check
+    :param approach: the saliency map approach that should be evaluated
+    :param _file_name:  the file name for the results
+    :param kwargs: the keyword arguments for the saliency map approach
+    :return: nothing, the results are saved
+    """
     steps = 1001
 
     dir_name = os.path.join("results", game)
@@ -399,24 +406,6 @@ def sanity_check( game, approach, _file_name, **kwargs):
 
     data_frame.to_csv(_file_name)
     env.close()
-
-def plot_sanity_check_results(file_name):
-    data_frame = pd.read_csv(file_name)
-
-    # Create plots
-    data_frame['rand_layer'] = data_frame.rand_layer.apply(
-        lambda x: 'fc_2' if x == 1 else 'fc_1' if x == 2 else 'conv_3' if x == 3 else 'conv_2' if x == 4 else 'conv_1')
-
-    sns.set(palette='colorblind', style="whitegrid")
-
-    ax = sns.barplot(x='rand_layer', y='pearson', data=data_frame)
-    show_and_save_plt(ax, 'pearson', label_size=28, tick_size=20, y_label='Pearson', ylim=(0,1))
-    ax = sns.barplot(x='rand_layer', y='ssim', data=data_frame)
-    plt.xlabel(None)
-    show_and_save_plt(ax, 'ssim', label_size=28, tick_size=20, y_label='Ssim', ylim=(0,1))
-    ax = sns.barplot(x='rand_layer', y='spearman', data=data_frame)
-    plt.xlabel(None)
-    show_and_save_plt(ax, 'spearman', label_size=28, tick_size=20, y_label='Spearman', ylim=(0,1))
 
 
 if __name__ == '__main__':

@@ -1,16 +1,11 @@
-'''
-This module was adapted from a module in https://github.com/HuTobias/HIGHLIGHTS-LRP
+"""
+This module plots the sanity check results.
+
+Some functions are adapted from https://github.com/HuTobias/HIGHLIGHTS-LRP
 Date: 2020
 commit: 834bf795ee37a74b611beb79851438e9a8afd676
 License: MIT
-
-
-This module implements sanity checks for saliency maps.
-To this end the layers in the model are cascadingly randomized and for each step we create a copy of the model.
-Then we create gameplay and saliency map streams for each of those models, using the decisions of the original model,
- such that all models get the same input states.
-Finally we compare the generated saliency of all models.
-'''
+"""
 
 import numpy as np
 import os
@@ -86,6 +81,12 @@ def normalise_image(image):
 
 
 def combine_game(file_name, games):
+    """
+    combines the data from the different games into one data frame.
+    :param file_name: the name of the result file in each game directory
+    :param games: the directory names of the different games
+    :return: the combined data frame
+    """
     data_frame = pd.DataFrame()
     for game in games:
         dir_name = os.path.join("results", game)
@@ -100,16 +101,32 @@ def combine_game(file_name, games):
 
 
 def add_approach(file_name, approach_name, games, df= pd.DataFrame()):
-        temp_frame = combine_game(file_name, games)
-        temp_frame = temp_frame.drop(temp_frame[temp_frame.rand_layer > 5].index)
-        temp_frame["approach"] = approach_name
-        if df.empty:
-            return temp_frame
-        else:
-            return df.append(temp_frame)
+    """
+    Adds the results of a given saliency map approach to the given DataFrame.
+    :param file_name: the name of the result file in each game directory
+    :param approach_name: the saliency map generation approach
+    :param games: the directory names of the different games
+    :param df: the dataFrame which should be extended. If it its empty then a new one will be generated
+    :return: the resulting dataFrame
+    """
+    temp_frame = combine_game(file_name, games)
+    #drop the results from random saleincy maps
+    temp_frame = temp_frame.drop(temp_frame[temp_frame.rand_layer > 5].index)
+    temp_frame["approach"] = approach_name
+    if df.empty:
+        return temp_frame
+    else:
+        return df.append(temp_frame)
 
 
 def plot_sanity_checks(data_frame, directory, only_plot = False):
+    """
+    Plots the sanity check results within a data_frame
+    :param data_frame: the data frame with the results
+    :param directory: the directory to save the plots
+    :param only_plot: should only the plot be saved or also the legend etc.
+    :return: nothing, the plots are saved
+    """
     # remove the random saliency values
     data_frame = data_frame.drop(data_frame[data_frame.rand_layer > 5].index)
 
@@ -130,20 +147,20 @@ def plot_sanity_checks(data_frame, directory, only_plot = False):
 
 
 def plot_combined_results(file_name, games, directory):
+    """
+    plots the sanity check results for a single approach
+    :param file_name: the name of the saved results for the approach
+    :param games: the games that should be combined
+    :param directory: the directory where the plots should be saved
+    :return: nothing, the plots are saved
+    """
     data_frame = combine_game(file_name, games)
     plot_sanity_checks(data_frame, directory, only_plot=True)
-
-
-def plot_sanity_check_results(file_name):
-    data_frame = pd.read_csv(file_name)
-
-    plot_sanity_checks(data_frame)
 
 
 if __name__ == '__main__':
 
     games = ["pacman", "breakout", "spaceInvaders", "frostbite"]
-    # games = ["pacman"]
 
     APPROACH = "occl"
     PATCH_SIZE = 4
@@ -206,6 +223,7 @@ if __name__ == '__main__':
     show_and_save_plt(ax, os.path.join(directory, 'ssim'), label_size=28, tick_size=40, y_label='SSIM',
                       ylim=(0, 1), only_plot=True)
 
+    # draw the legend
     plot_params["legend"] = "full"
     ax = sns.lineplot(x='rand_layer', y='ssim', hue="approach", style="approach", data=combined_df, **plot_params)
 
@@ -244,6 +262,7 @@ if __name__ == '__main__':
     show_and_save_plt(ax, os.path.join(directory, 'ssim'), label_size=28, tick_size=40, y_label='SSIM',
                       ylim=(0, 1), only_plot=True)
 
+    # draw the legend
     plot_params["legend"] = "full"
     ax = sns.lineplot(x='rand_layer', y='ssim', hue="approach", style="approach", data=combined_df, **plot_params)
 

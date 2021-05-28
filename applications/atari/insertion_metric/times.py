@@ -1,17 +1,17 @@
-'''
+"""
 Module for plotting the insertion metric results
-'''
+"""
 
 import numpy as np
-import matplotlib.pyplot as plt
-import seaborn as sns
 import os
 
 
-
-
-
 def load_scores(dir_name):
+    """
+    load the saved run times.
+    :param dir_name: the directoy where the times are saved
+    :return: the combined results in one array
+    """
     # load the different data checkpoints
     x_0 = np.load(file="insertion_metric/results/" + dir_name + "/times_100.npy", allow_pickle=True)
     x_1 = np.load(file="insertion_metric/results/" + dir_name + "/times_200.npy", allow_pickle=True)
@@ -53,11 +53,6 @@ approaches = [
     "noise_4_blur_rawDiff"
               ]
 
-
-
-
-# Plot settings
-# to generate graph with normalization iterate over x_normalized
 games = ["pacman", "breakout", "spaceInvaders", "frostbite"]
 for approach in approaches:
     first = True

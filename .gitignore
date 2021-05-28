@@ -2,3 +2,14 @@
 /.idea
 /applications/atari/__pycache__
 /applications/atari/.idea
+/applications/atari/sanity_checks/figures/Lime_quickshift_1_4_0_3000
+/applications/atari/sanity_checks/figures/Lime_slic_80_10_05_1000
+/applications/atari/sanity_checks/figures/noise_False_False_4
+/applications/atari/sanity_checks/figures/noise_True_False_4
+/applications/atari/sanity_checks/figures/noise_True_True_4
+/applications/atari/sanity_checks/figures/occl_4_0
+/applications/atari/sanity_checks/figures/rise_08_18_3000
+/applications/atari/sanity_checks/figures/Lime_felzenswalb_1_025_2_2500
+/applications/atari/sanity_checks/__pycache__
+applications/atari/HIGHLIGHTS_states/Frostbite/desktop.ini
+applications/atari/HIGHLIGHTS_states/Frostbite/desktop.ini
