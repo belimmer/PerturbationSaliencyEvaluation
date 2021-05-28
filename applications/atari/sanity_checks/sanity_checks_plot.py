@@ -151,7 +151,7 @@ if __name__ == '__main__':
     file_name = APPROACH + '_' + str(PATCH_SIZE) + '_' + str(COLOR) + ".csv"
     plot_combined_results(file_name, games, file_name.replace(".csv", ""))
 
-    combined_df = add_approach(file_name, approach_name="Occlusion", games=games)
+    combined_df = add_approach(file_name, approach_name="Occlusion Sensitivity", games=games)
 
     APPROACH = "rise"
     MASK_SIZE = 18
@@ -178,19 +178,19 @@ if __name__ == '__main__':
     RAW_DIFF = False
     file_name = APPROACH + '_' + str(BLUR) + '_' + str(RAW_DIFF) + '_' + str(RADIUS) + ".csv"
     plot_combined_results(file_name, games, file_name.replace(".csv", ""))
-    combined_df = add_approach(file_name, approach_name="Noise Original", games=games, df=combined_df)
+    combined_df = add_approach(file_name, approach_name="NS Original", games=games, df=combined_df)
 
     BLUR = False
     RAW_DIFF = False
     file_name = APPROACH + '_' + str(BLUR) + '_' + str(RAW_DIFF) + '_' + str(RADIUS) + ".csv"
     plot_combined_results(file_name, games, file_name.replace(".csv", ""))
-    combined_df = add_approach(file_name, approach_name="Noise Black", games=games, df=combined_df)
+    combined_df = add_approach(file_name, approach_name="NS Black", games=games, df=combined_df)
 
     BLUR = True
     RAW_DIFF = True
     file_name = APPROACH + '_' + str(BLUR) + '_' + str(RAW_DIFF) + '_' + str(RADIUS) + ".csv"
     plot_combined_results(file_name, games, file_name.replace(".csv", ""))
-    combined_df = add_approach(file_name, approach_name="Noise Chosen Action", games=games, df=combined_df)
+    combined_df = add_approach(file_name, approach_name="NS Chosen Action", games=games, df=combined_df)
 
     directory = "combined"
     plot_params = {"ci": 99, "err_style": "band", "markers": True, "markersize" : 10, "legend":False}
@@ -212,7 +212,7 @@ if __name__ == '__main__':
     handles = ax.get_legend_handles_labels()
     handles[0].pop(0)
     handles[1].pop(0)
-    fig = plt.figure(figsize=(9,0.4))
+    fig = plt.figure(figsize=(9.2,0.4))
     fig.legend(handles[0],handles[1], loc="upper left", frameon=True, ncol= len(handles[0]))
     plt.savefig(fname=os.path.join("figures","sanity_legend.png"))
     plt.show()

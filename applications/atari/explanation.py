@@ -3,12 +3,13 @@ from PIL import Image
 from matplotlib import pyplot as plt
 import timeit
 
-import applications.atari.main_atari as main_atari
 import applications.atari.rise as rise
 import applications.atari.greydanus as greydanus
 import applications.atari.custom_occlusion_sensitvity as custom_occlusion_sensitvity
 import applications.atari.custom_greydanus as custom_greydanus
 import applications.atari.custom_lime as custom_lime
+
+import os
 
 class explainer():
     """
@@ -152,6 +153,13 @@ class explainer():
         return score, time
 
 
+def save_frame(array, save_file, frame):
+    if not (os.path.isdir(save_file)):
+        os.makedirs(save_file)
+        os.rmdir(save_file)
+    plt.imsave(save_file + '_' + str(frame) + '.png', array)
+
+
 def create_saliency_image(saliency_map, image, output_path, cmap='jet'):
     """
     Takes an image and ads a saliency map as color map.
@@ -165,7 +173,7 @@ def create_saliency_image(saliency_map, image, output_path, cmap='jet'):
     saliency = Image.fromarray(saliency_map.astype(np.float32)).resize(size=(image.shape[1], image.shape[0]),
                                                                                        resample=Image.NEAREST)
     saliency = np.array(saliency)
-    main_atari.save_frame(saliency, output_path + "_saliency_only.png", 0)
+    save_frame(saliency, output_path + "_saliency_only.png", 0)
 
     plt.axis('off')
     plt.imshow(image)

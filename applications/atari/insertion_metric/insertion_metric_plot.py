@@ -71,7 +71,7 @@ if __name__ == '__main__':
     GAMES = ["pacman", "breakout", "frostbite", "spaceInvaders"]
     #GAMES = ["pacman"]
 
-    NOISE_LIME = False
+    NOISE_LIME = True
 
     for game in GAMES:
         if game == "pacman":
@@ -196,7 +196,7 @@ if __name__ == '__main__':
         fig = plt.figure(figsize=(6.2, 0.4))
         if NOISE_LIME:
             labels = ["NS Original", "NS Black", "NS Chosen Action", "LIME Quickshift", "LIME SLIC", "LIME Felzenszwalb"]
-            fig = plt.figure(figsize=(10, 0.4))
+            fig = plt.figure(figsize=(10.2, 0.4))
         fig.legend(handles, labels, loc="upper left", frameon=True, ncol= len(handles))
         plt.savefig(fname=os.path.join("figures", dir_name, "insertion_legend.png"))
         plt.show()
