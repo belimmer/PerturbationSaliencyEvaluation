@@ -13,7 +13,7 @@ from PIL import Image
 from matplotlib import pyplot as plt
 import re
 
-import applications.atari.main_atari as main_atari
+from applications.atari.explanation import save_frame
 
 import os
 from skimage import filters, transform
@@ -121,7 +121,7 @@ def create_saliency_image(saliency_map, image, output_path, cmap='jet'):
     image = transform.resize(image, image_shape, order=0, mode='reflect')
 
     saliency = np.array(saliency)
-    main_atari.save_frame(saliency, output_path + "_saliency_only", 0)
+    save_frame(saliency, output_path + "_saliency_only", 0)
 
 
     saliency = normalise_image(saliency)

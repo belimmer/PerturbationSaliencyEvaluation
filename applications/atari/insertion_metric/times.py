@@ -13,16 +13,16 @@ def load_scores(dir_name):
     :return: the combined results in one array
     """
     # load the different data checkpoints
-    x_0 = np.load(file="insertion_metric/results/" + dir_name + "/times_100.npy", allow_pickle=True)
-    x_1 = np.load(file="insertion_metric/results/" + dir_name + "/times_200.npy", allow_pickle=True)
-    x_2 = np.load(file="insertion_metric/results/" + dir_name + "/times_300.npy", allow_pickle=True)
-    x_3 = np.load(file="insertion_metric/results/" + dir_name + "/times_400.npy", allow_pickle=True)
-    x_4 = np.load(file="insertion_metric/results/" + dir_name + "/times_500.npy", allow_pickle=True)
-    x_5 = np.load(file="insertion_metric/results/" + dir_name + "/times_600.npy", allow_pickle=True)
-    x_6 = np.load(file="insertion_metric/results/" + dir_name + "/times_700.npy", allow_pickle=True)
-    x_7 = np.load(file="insertion_metric/results/" + dir_name + "/times_800.npy", allow_pickle=True)
-    x_8 = np.load(file="insertion_metric/results/" + dir_name + "/times_900.npy", allow_pickle=True)
-    x_9 = np.load(file="insertion_metric/results/" + dir_name + "/times_1000.npy", allow_pickle=True)
+    x_0 = np.load(file="results/" + dir_name + "/times_100.npy", allow_pickle=True)
+    x_1 = np.load(file="results/" + dir_name + "/times_200.npy", allow_pickle=True)
+    x_2 = np.load(file="results/" + dir_name + "/times_300.npy", allow_pickle=True)
+    x_3 = np.load(file="results/" + dir_name + "/times_400.npy", allow_pickle=True)
+    x_4 = np.load(file="results/" + dir_name + "/times_500.npy", allow_pickle=True)
+    x_5 = np.load(file="results/" + dir_name + "/times_600.npy", allow_pickle=True)
+    x_6 = np.load(file="results/" + dir_name + "/times_700.npy", allow_pickle=True)
+    x_7 = np.load(file="results/" + dir_name + "/times_800.npy", allow_pickle=True)
+    x_8 = np.load(file="results/" + dir_name + "/times_900.npy", allow_pickle=True)
+    x_9 = np.load(file="results/" + dir_name + "/times_1000.npy", allow_pickle=True)
 
     # combine the data checkpoints to one array
     x = np.concatenate((x_0, x_1), axis=0)

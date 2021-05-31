@@ -308,6 +308,6 @@ if __name__ == '__main__':
                                 .replace('  ',' '), sep=' '))
     summary_states, summary_states_with_context = highlights_div(state_features_importance_df, 5,10,10)
     # for breakout we used:
-    summary_states, summary_states_with_context = highlights_div(state_features_importance_df, 5, 10, 10,
-                                                                 percentile_threshold=75)
+    # summary_states, summary_states_with_context = highlights_div(state_features_importance_df, 5, 10, 10,
+    #                                                             percentile_threshold=75)
     print('div:', summary_states)
