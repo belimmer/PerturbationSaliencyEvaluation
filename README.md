@@ -15,3 +15,4 @@ The repository is split into two subfolders: *`applications/affectnet`* and *`ap
  - *`applications/atari`* contains 4 trained atari agents (Pac-Man, Breakout, Space Invaders, and Frostbite), the code to generate saliency maps for them, and the comparisons metrics (sanity checks and insertion metric).
  - *`applications/affectnet`* contains an emotion recognition model and the code to generate saliency maps for it. 
 
+Each subfolder contains an additional readme-file with more detailed information on how to use the code for the respective application.
