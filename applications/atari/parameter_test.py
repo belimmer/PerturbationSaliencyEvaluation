@@ -41,7 +41,7 @@ def test_parameters(_states, _segmentation_fn, parameters, _best_aucs, _best_par
         time += stop - start
         print("time:" + str(stop - start))
         score = insertion.single_run(img_tensor=input, explanation=ranked_mask, name=state[1],
-                                     approach="lime", use_softmax=True, plot=False)
+                                     approach="lime", use_normalization=True, plot=False)
         auc = score.sum() / (score.shape[0])
         sum += auc
 
@@ -54,13 +54,19 @@ def test_parameters(_states, _segmentation_fn, parameters, _best_aucs, _best_par
     data_frame["params"] = _best_parameters
     data_frame["time"] = _times
 
-    data_frame.to_csv(os.path.join(_save_dir, "best_parameters.csv"))
+    data_frame.to_csv(os.path.join(_save_dir, "best_parameters_" + ins_color + ".csv"))
 
 if __name__ == '__main__':
     state_path = "HIGHLIGHTS_states/"
     state_output_path = "output_highlight_states/"
     model = keras.models.load_model('models/MsPacman_5M_ingame_reward.h5')
-    segmentation = "rise"
+    segmentation = "noise"
+
+    ins_color = "black"
+    if ins_color == "black":
+        substrate_function = rise.custom_black
+    elif ins_color == "random":
+        substrate_function = rise.random_occlusion
 
     states = []
 
@@ -70,7 +76,7 @@ if __name__ == '__main__':
 
     my_explainer = explainer(model=model)
     insertion = rise.CausalMetric(model=model, mode='ins', step=np.squeeze(states[0][0]).shape[0],
-                                  substrate_fn=rise.custom_black)
+                                  substrate_fn=substrate_function)
 
     if segmentation == "quickshift":
         # Quckschift
@@ -167,41 +173,43 @@ if __name__ == '__main__':
         for i in range(1, 10):
             for j in range(4, 25):
                 for k in range(1,7):
-                    probability = 0.1 * i
-                    mask_size = j
-                    number_of_masks = 500 * k
+                    for l in range (0,2):
+                        probability = 0.1 * i
+                        mask_size = j
+                        number_of_masks = 500 * k
+                        softmax = l
 
-                    my_explainer = explainer(model=model) # need new explainer since the masks are saved
+                        my_explainer = explainer(model=model) # need new explainer since the masks are saved
 
-                    sum = 0
-                    time = 0
-                    for state in states:
-                        input = np.squeeze(state[0])
-                        start = timeit.default_timer()
-                        saliency_map = my_explainer.generate_rise_prediction(input,
-                                                                            probability=probability,
-                                                                            use_softmax = True,
-                                                                            number_of_mask = number_of_masks,
-                                                                            mask_size=mask_size)
-                        stop = timeit.default_timer()
-                        time += stop - start
-                        print("time:" + str(stop - start))
-                        score = insertion.single_run(img_tensor=input, explanation=saliency_map, name=state[1],
-                                                    approach="lime", use_softmax=True, plot=False)
-                        auc = score.sum() / (score.shape[0])
-                        sum += auc
+                        sum = 0
+                        time = 0
+                        for state in states:
+                            input = np.squeeze(state[0])
+                            start = timeit.default_timer()
+                            saliency_map = my_explainer.generate_rise_prediction(input,
+                                                                                probability=probability,
+                                                                                use_softmax = softmax,
+                                                                                number_of_mask = number_of_masks,
+                                                                                mask_size=mask_size)
+                            stop = timeit.default_timer()
+                            time += stop - start
+                            print("time:" + str(stop - start))
+                            score = insertion.single_run(img_tensor=input, explanation=saliency_map, name=state[1],
+                                                         approach="lime", use_normalization=True, plot=False)
+                            auc = score.sum() / (score.shape[0])
+                            sum += auc
 
-                    parameters=(probability,mask_size,number_of_masks)
-                    best_aucs.append(sum)
-                    best_parameters.append(parameters)
-                    times.append(time)
+                        parameters=(probability,mask_size,number_of_masks, softmax)
+                        best_aucs.append(sum)
+                        best_parameters.append(parameters)
+                        times.append(time)
 
-                    data_frame = pd.DataFrame()
-                    data_frame["aucs"] = best_aucs
-                    data_frame["params"] = best_parameters
-                    data_frame["time"] = times
+                        data_frame = pd.DataFrame()
+                        data_frame["aucs"] = best_aucs
+                        data_frame["params"] = best_parameters
+                        data_frame["time"] = times
 
-                    data_frame.to_csv(os.path.join(save_dir, "best_parameters.csv"))
+                        data_frame.to_csv(os.path.join(save_dir, "best_parameters" + ins_color + ".csv"))
 
     if segmentation == "occlusion":
         save_dir = os.path.join("parameter_results", "occl")
@@ -213,35 +221,37 @@ if __name__ == '__main__':
         times = []
         for i in range(1, 11):
             for j in range(0,2):
-                patch_size = i
-                color = 0.5 * j
-                parameters = (patch_size, color)
+                for k in range(0,2):
+                    patch_size = i
+                    color = 0.5 * j
+                    softmax = k
+                    parameters = (patch_size, color, softmax)
 
-                sum = 0
-                time = 0
-                for state in states:
-                    input = np.squeeze(state[0])
-                    start = timeit.default_timer()
-                    saliency_map = my_explainer.generate_occlusion_explanation(input=input, patch_size=patch_size, color=color,
-                                                                           use_softmax=True)
-                    stop = timeit.default_timer()
-                    time += stop - start
-                    print("time:" + str(stop - start))
-                    score = insertion.single_run(img_tensor=input, explanation=saliency_map, name=state[1],
-                                                 approach="not_used", use_softmax=True, plot=False)
-                    auc = score.sum() / (score.shape[0])
-                    sum += auc
+                    sum = 0
+                    time = 0
+                    for state in states:
+                        input = np.squeeze(state[0])
+                        start = timeit.default_timer()
+                        saliency_map = my_explainer.generate_occlusion_explanation(input=input, patch_size=patch_size, color=color,
+                                                                               use_softmax=softmax)
+                        stop = timeit.default_timer()
+                        time += stop - start
+                        print("time:" + str(stop - start))
+                        score = insertion.single_run(img_tensor=input, explanation=saliency_map, name=state[1],
+                                                     approach="not_used", use_normalization=True, plot=False)
+                        auc = score.sum() / (score.shape[0])
+                        sum += auc
 
-                best_aucs.append(sum)
-                best_parameters.append(parameters)
-                times.append(time)
+                    best_aucs.append(sum)
+                    best_parameters.append(parameters)
+                    times.append(time)
 
-                data_frame = pd.DataFrame()
-                data_frame["aucs"] = best_aucs
-                data_frame["params"] = best_parameters
-                data_frame["time"] = times
+                    data_frame = pd.DataFrame()
+                    data_frame["aucs"] = best_aucs
+                    data_frame["params"] = best_parameters
+                    data_frame["time"] = times
 
-                data_frame.to_csv(os.path.join(save_dir, "best_parameters.csv"))
+                    data_frame.to_csv(os.path.join(save_dir, "best_parameters" + ins_color + ".csv"))
 
     if segmentation == "noise":
         save_dir = os.path.join("parameter_results", "noise")
@@ -265,7 +275,7 @@ if __name__ == '__main__':
                 time += stop - start
                 print("time:" + str(stop - start))
                 score = insertion.single_run(img_tensor=input, explanation=saliency_map, name=state[1],
-                                             approach="not_used", use_softmax=True, plot=False)
+                                             approach="not_used", use_normalization=True, plot=False)
                 auc = score.sum() / (score.shape[0])
                 sum += auc
 
@@ -278,6 +288,6 @@ if __name__ == '__main__':
             data_frame["params"] = best_parameters
             data_frame["time"] = times
 
-            data_frame.to_csv(os.path.join(save_dir, "best_parameters.csv"))
+            data_frame.to_csv(os.path.join(save_dir, "best_parameters_" + ins_color + ".csv"))
 
 

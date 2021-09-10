@@ -86,6 +86,11 @@ def custom_blur(img):
     return gaussian_filter(img, sigma=8)
 
 
+def random_occlusion(img):
+    """ Returns a version of the image that is filled with random floats between 0 and 1"""
+    return np.random.uniform(low=0.0, high=1.0, size=[img.shape[0], img.shape[1], img.shape[2]])
+
+
 def auc(arr):
     """Returns normalized Area Under Curve of the array."""
     return (arr.sum() - arr[0] / 2 - arr[-1] / 2) / (arr.shape[0] - 1)
@@ -107,7 +112,7 @@ class CausalMetric():
         self.step = step
         self.substrate_fn = substrate_fn
 
-    def single_run(self, img_tensor, explanation, name, approach, use_softmax=False, plot=True):
+    def single_run(self, img_tensor, explanation, name, approach, use_normalization=False, plot=True):
         r"""Run metric on one image-saliency pair.
         Args:
             img_tensor (Tensor): normalized image tensor.
@@ -128,6 +133,9 @@ class CausalMetric():
         c = np.argmax(np.squeeze(pred))
         n_steps = (HW + self.step - 1) // self.step
 
+        # used for normalization later
+        max_value_old_prediciton = pred.max()
+
         if self.mode == 'del':
             ylabel = 'Pixels deleted'
             start = img_tensor
@@ -142,8 +150,12 @@ class CausalMetric():
         salient_order = np.flip(np.argsort(explanation.reshape(-1, HW), axis=1), axis=-1)
         for i in range(n_steps+1):
             pred = self.model.predict(np.expand_dims(start, axis=0))
-            if use_softmax:
-                pred = softmax(pred)
+            if use_normalization:
+                if max_value_old_prediciton != 0:
+                    pred /= max_value_old_prediciton
+                else:
+                    # set all values to 0 if the original prediction had q value 0
+                    pred *= 0
             scores[i] = pred[0, c]
 
             if plot:

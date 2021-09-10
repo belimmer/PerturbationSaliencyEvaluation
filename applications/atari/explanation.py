@@ -149,7 +149,7 @@ class explainer():
         time = stop - start
 
         score = self.insertion.single_run(img_tensor=np.squeeze(stacked_frames), explanation=saliency_map,
-                                     name="frame_" + str(_), approach="_", plot=False, use_softmax=True)
+                                          name="frame_" + str(_), approach="_", plot=False, use_normalization=True)
         return score, time
 
 
