@@ -60,7 +60,7 @@ if __name__ == '__main__':
     state_path = "HIGHLIGHTS_states/"
     state_output_path = "output_highlight_states/"
     model = keras.models.load_model('models/MsPacman_5M_ingame_reward.h5')
-    segmentation = "noise"
+    segmentation = "slic"
 
     ins_color = "black"
     if ins_color == "black":
@@ -209,7 +209,7 @@ if __name__ == '__main__':
                         data_frame["params"] = best_parameters
                         data_frame["time"] = times
 
-                        data_frame.to_csv(os.path.join(save_dir, "best_parameters" + ins_color + ".csv"))
+                        data_frame.to_csv(os.path.join(save_dir, "best_parameters_" + ins_color + ".csv"))
 
     if segmentation == "occlusion":
         save_dir = os.path.join("parameter_results", "occl")
@@ -251,7 +251,7 @@ if __name__ == '__main__':
                     data_frame["params"] = best_parameters
                     data_frame["time"] = times
 
-                    data_frame.to_csv(os.path.join(save_dir, "best_parameters" + ins_color + ".csv"))
+                    data_frame.to_csv(os.path.join(save_dir, "best_parameters_" + ins_color + ".csv"))
 
     if segmentation == "noise":
         save_dir = os.path.join("parameter_results", "noise")
