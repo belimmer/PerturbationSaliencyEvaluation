@@ -4,14 +4,16 @@ This module does the insertion metric experiments and measures the run-time of t
 
 from applications.atari.custom_atari_wrapper import atari_wrapper
 from applications.atari.explanation import explainer
+import applications.atari.rise as rise
 import gym
 import keras
 import numpy as np
 import skimage.segmentation as seg
 import os
+import timeit
 
 
-def test_one_approach(saliency_fn, model, save_dir, _GAME):
+def test_one_approach(saliency_fn, model, save_dir, _GAME, insertion_substrate_fn):
     """Do the insertion metric test for one saliency method."""
     # create save dir if it does not exist yet
     if not os.path.isdir(save_dir):
@@ -27,6 +29,9 @@ def test_one_approach(saliency_fn, model, save_dir, _GAME):
     np.random.seed(42)
 
     steps = 1001
+
+    insertion = rise.CausalMetric(model=model, mode='ins', step=84,
+                                       substrate_fn= insertion_substrate_fn)  # TODO Fix dirty number for steps
 
     model.summary()
     if _GAME == "pacman":
@@ -76,10 +81,19 @@ def test_one_approach(saliency_fn, model, save_dir, _GAME):
             if _ % 10 == 0:
                 print("Step: " + str(_))
 
-            tmp_scores, time = my_explainer.insertion_metric(_, saliency_fn=saliency_fn, stacked_frames=stacked_frames)
+            # Generate Saliency map and measure the time needed for this creation
+            start = timeit.default_timer()
+            saliency_map = saliency_fn(np.squeeze(stacked_frames))
+            stop = timeit.default_timer()
+            time = stop - start
+
+            # Calculate Insertion metric scores for this saliency maps
+            tmp_scores = insertion.single_run(img_tensor=np.squeeze(stacked_frames), explanation=saliency_map,
+                                              name="frame_" + str(_), approach="_", plot=False,
+                                              use_normalization=True)
+
             scores.append(tmp_scores)
             times.append(time)
-
 
         stacked_frames, observations, reward, done, info = wrapper.step(action)
         total_reward += reward
@@ -104,6 +118,13 @@ def test_one_approach(saliency_fn, model, save_dir, _GAME):
 
 if __name__ == '__main__':
 
+    insertion_color = "random"
+
+    if insertion_color == "random":
+        insertion_fn = rise.random_occlusion
+    elif insertion_color == "black":
+        insertion_fn = rise.custom_black
+
     for GAME in ["pacman", "breakout", "spaceInvaders", "frostbite"]:
 
         # model needs to be defined outside of the insertion metric since it is needed for the different saliency fns
@@ -118,7 +139,7 @@ if __name__ == '__main__':
 
         my_explainer = explainer(model=model_)
 
-        dir = os.path.join("results", GAME)
+        dir = os.path.join("results", GAME, insertion_color + "_insertion")
 
         save_dir_ = os.path.join(dir, "rise_08_18_3000")
         saliency_fn_ = (lambda x: (my_explainer.generate_rise_prediction(x,
@@ -126,7 +147,8 @@ if __name__ == '__main__':
                                                                          use_softmax=True,
                                                                          number_of_mask=3000,
                                                                          mask_size=18)))
-        test_one_approach(saliency_fn=saliency_fn_, model=model_, save_dir=save_dir_, _GAME=GAME)
+        test_one_approach(saliency_fn=saliency_fn_, model=model_, save_dir=save_dir_, _GAME=GAME,
+                          insertion_substrate_fn= insertion_fn)
 
 
         save_dir_ = os.path.join(dir, "Lime_slic_80_10_05_1000")
@@ -138,7 +160,8 @@ if __name__ == '__main__':
                                                                           positive_only=True,
                                                                           segmentation_fn=segmentation_fn,
                                                                           num_samples=1000))[2])
-        test_one_approach(saliency_fn=saliency_fn_, model=model_, save_dir=save_dir_, _GAME=GAME)
+        test_one_approach(saliency_fn=saliency_fn_, model=model_, save_dir=save_dir_, _GAME=GAME,
+                          insertion_substrate_fn=insertion_fn)
 
         save_dir_ = os.path.join(dir, "Lime_quickshift_1_4_0_3000")
         segmentation_fn = (lambda x: seg.quickshift(x, kernel_size=1, max_dist=4, ratio=0, convert2lab=False))
@@ -147,7 +170,8 @@ if __name__ == '__main__':
                                                                           positive_only=True,
                                                                           segmentation_fn=segmentation_fn,
                                                                           num_samples=3000))[2])
-        test_one_approach(saliency_fn=saliency_fn_, model=model_, save_dir=save_dir_, _GAME=GAME)
+        test_one_approach(saliency_fn=saliency_fn_, model=model_, save_dir=save_dir_, _GAME=GAME,
+                          insertion_substrate_fn= insertion_fn)
 
         save_dir_ = os.path.join(dir, "Lime_felzenswalb_1_025_2_2500")
         segmentation_fn = (
@@ -157,31 +181,35 @@ if __name__ == '__main__':
                                                                           positive_only=True,
                                                                           segmentation_fn=segmentation_fn,
                                                                           num_samples=2500))[2])
-        test_one_approach(saliency_fn=saliency_fn_, model=model_, save_dir=save_dir_, _GAME=GAME)
-
+        test_one_approach(saliency_fn=saliency_fn_, model=model_, save_dir=save_dir_, _GAME=GAME,
+                          insertion_substrate_fn= insertion_fn)
 
         save_dir_ = os.path.join(dir, "occl_4_0")
         saliency_fn_ = (lambda x: (my_explainer.generate_occlusion_explanation(input=x, patch_size=4, color=0,
-                                                                               use_softmax=True)))
-        test_one_approach(saliency_fn=saliency_fn_, model=model_, save_dir=save_dir_, _GAME=GAME)
+                                                                               use_softmax=False)))
+        test_one_approach(saliency_fn=saliency_fn_, model=model_, save_dir=save_dir_, _GAME=GAME,
+                          insertion_substrate_fn= insertion_fn)
 
         save_dir_ = os.path.join(dir, "occl_4_gray")
         saliency_fn_ = (lambda x: (my_explainer.generate_occlusion_explanation(input=x, patch_size=4, color=0.5,
                                                                                use_softmax=True)))
-        test_one_approach(saliency_fn=saliency_fn_, model=model_, save_dir=save_dir_, _GAME=GAME)
-
+        test_one_approach(saliency_fn=saliency_fn_, model=model_, save_dir=save_dir_, _GAME=GAME,
+                          insertion_substrate_fn= insertion_fn)
 
         save_dir_ = os.path.join(dir, "noise_4_blur")
         saliency_fn_ = (lambda x: my_explainer.generate_greydanus_explanation(x, r=4, blur=True))
-        test_one_approach(saliency_fn=saliency_fn_, model=model_, save_dir=save_dir_, _GAME=GAME)
+        test_one_approach(saliency_fn=saliency_fn_, model=model_, save_dir=save_dir_, _GAME=GAME,
+                          insertion_substrate_fn= insertion_fn)
 
         save_dir_ = os.path.join(dir, "noise_4_black")
         saliency_fn_ = (lambda x: my_explainer.generate_greydanus_explanation(x, r=4, blur=False))
-        test_one_approach(saliency_fn=saliency_fn_, model=model_, save_dir=save_dir_, _GAME=GAME)
+        test_one_approach(saliency_fn=saliency_fn_, model=model_, save_dir=save_dir_, _GAME=GAME,
+                          insertion_substrate_fn= insertion_fn)
 
         save_dir_ = os.path.join(dir, "noise_4_blur_rawDiff")
         saliency_fn_ = (lambda x: my_explainer.generate_greydanus_explanation(x, r=4, blur=True, raw_diff=True))
-        test_one_approach(saliency_fn=saliency_fn_, model=model_, save_dir=save_dir_, _GAME=GAME)
+        test_one_approach(saliency_fn=saliency_fn_, model=model_, save_dir=save_dir_, _GAME=GAME,
+                          insertion_substrate_fn= insertion_fn)
 
 
 

@@ -77,7 +77,10 @@ if __name__ == '__main__':
     GAMES = ["pacman", "breakout", "frostbite", "spaceInvaders"]
 
     # Do you want to generate plots for all Noise Sensitivity and LIME variants?
-    NOISE_LIME = True
+    NOISE_LIME = False
+
+    # the color used perturbing the image in the insertion metric
+    INSERTION_COLOR = "black_insertion"
 
     for game in GAMES:
         if game == "pacman":
@@ -155,7 +158,7 @@ if __name__ == '__main__':
         # Plot settings
         first = True
         for approach in approaches:
-            dir_name_ = os.path.join(game, approach)
+            dir_name_ = os.path.join(game, INSERTION_COLOR, approach)
             scores = load_scores(dir_name_)
             temp_data = pd.DataFrame()
             temp_scores = []

@@ -1,7 +1,6 @@
 import numpy as np
 from PIL import Image
 from matplotlib import pyplot as plt
-import timeit
 
 import applications.atari.rise as rise
 import applications.atari.greydanus as greydanus
@@ -11,6 +10,7 @@ import applications.atari.custom_lime as custom_lime
 
 import os
 
+
 class explainer():
     """
     Class to generate different occlusion based explanations
@@ -19,7 +19,6 @@ class explainer():
         self.model = model
         self.rise_masks = []
         self.masks_generated = False
-        self.insertion = rise.CausalMetric(model=model, mode='ins', step=84, substrate_fn=rise.custom_black)# TODO Fix dirty number for steps
 
     def generate_occlusion_explanation(self, input, patch_size=5, use_softmax=False, use_old_confidence=False, color=0.0, neuron_selection = False):
         """
@@ -134,23 +133,6 @@ class explainer():
         else:
             model_prediction = neuron_selection
         return prediction[model_prediction]
-
-    def insertion_metric(self,_, saliency_fn, stacked_frames):
-        """
-        calculate the insertion metric for the given saliency_fn for the input *stacked_frames*
-        :param _: the frame number, used for naming single plots
-        :param saliency_fn: the function used to create saliency maps
-        :param stacked_frames: the input frames for the agent
-        :return: a list containing the insertion metric scores
-        """
-        start = timeit.default_timer()
-        saliency_map = saliency_fn(np.squeeze(stacked_frames))
-        stop = timeit.default_timer()
-        time = stop - start
-
-        score = self.insertion.single_run(img_tensor=np.squeeze(stacked_frames), explanation=saliency_map,
-                                          name="frame_" + str(_), approach="_", plot=False, use_normalization=True)
-        return score, time
 
 
 def save_frame(array, save_file, frame):

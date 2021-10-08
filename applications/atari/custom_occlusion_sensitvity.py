@@ -106,7 +106,9 @@ class CustomOcclusionSensitivity:
         ]
 
         pred = model.predict(np.expand_dims(image, axis=0))
-        original_pred = np.squeeze(softmax(pred))[class_index]
+        if use_softmax:
+            pred = softmax(pred)
+        original_pred = np.squeeze(pred)[class_index]
         for (index_y, index_x), patch in zip(
             coordinates, patches
         ):
