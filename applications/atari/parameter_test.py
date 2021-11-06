@@ -11,28 +11,29 @@ import applications.atari.rise as rise
 from applications.atari.explanation import explainer
 from applications.atari.custom_lime import rectangle_segmentation
 
-import pandas as pd
 
-
-def test_parameters(_states, _segmentation_fn, parameters, _best_aucs, _best_parameters, _times, _save_dir, num_samples=1000):
+def test_parameters(_states, _segmentation_fn, parameters, q_vals, _parameters, _times,
+                    my_explainer_, insertion_metric, num_samples=1000):
     """
     Helper Function to do the parameter test for LIME segmentation algorithms
     :param _states: the states the should be tested
     :param _segmentation_fn: the segmentation function used by LIME
     :param parameters: the parameters used in the segmenation function
-    :param _best_aucs: the list that stores the auc values
-    :param _best_parameters: the list that stores the parameters
+    :param q_vals: the list that stores the q-values during the insertion test
+    :param _parameters: the list that stores the parameters
     :param _times: the list that stores the time values
-    :param _save_dir: the directory where the results should be saved
+    :param my_explainer_: the explainer used to create the saliency maps
+    :param insertion_metric: the insertion metric object which holds for example the information if black or random baseline is used
     :param num_samples: the number of training samples for LIME
-    :return: nothing, the results are saved
+    :return: nothing, but q_vals, parameters and times are updated
     """
-    sum = 0
+
     time = 0
-    for state in _states:
+    for idx in range(len(_states)):
+        state = _states[idx]
         input = np.squeeze(state[0])
         start = timeit.default_timer()
-        explanation, mask, ranked_mask = my_explainer.generate_lime_explanation(input=input,
+        explanation, mask, ranked_mask = my_explainer_.generate_lime_explanation(input=input,
                                                                                 hide_img=False,
                                                                                 positive_only=True,
                                                                                 segmentation_fn= _segmentation_fn,
@@ -40,29 +41,16 @@ def test_parameters(_states, _segmentation_fn, parameters, _best_aucs, _best_par
         stop = timeit.default_timer()
         time += stop - start
         print("time:" + str(stop - start))
-        score = insertion.single_run(img_tensor=input, explanation=ranked_mask, name=state[1],
-                                     approach="lime", use_normalization=True, plot=False)
-        auc = score.sum() / (score.shape[0])
-        sum += auc
+        scores = insertion_metric.single_run(img_tensor=input, explanation=ranked_mask)
+        q_vals[idx].append(scores)
 
-    _best_aucs.append(sum)
-    _best_parameters.append(parameters)
+    _parameters.append(parameters)
     _times.append(time)
 
-    data_frame = pd.DataFrame()
-    data_frame["aucs"] = _best_aucs
-    data_frame["params"] = _best_parameters
-    data_frame["time"] = _times
 
-    data_frame.to_csv(os.path.join(_save_dir, "best_parameters_" + ins_color + ".csv"))
-
-if __name__ == '__main__':
-    state_path = "HIGHLIGHTS_states/"
-    state_output_path = "output_highlight_states/"
-    model = keras.models.load_model('models/MsPacman_5M_ingame_reward.h5')
-    segmentation = "slic"
-
-    ins_color = "black"
+def parameter_test(segmentation, ins_color, state_path):
+    assert segmentation in ["quickshift", "felzenswalb", "slic", "patches", "rise", "occlusion", "noise"]
+    assert ins_color in ['black', 'random']
     if ins_color == "black":
         substrate_function = rise.custom_black
     elif ins_color == "random":
@@ -78,37 +66,45 @@ if __name__ == '__main__':
     insertion = rise.CausalMetric(model=model, mode='ins', step=np.squeeze(states[0][0]).shape[0],
                                   substrate_fn=substrate_function)
 
+    # reset lists to hold parameter test results
+    best_parameters = []
+    times = []
+    q_vals = []
+    for state in states:
+        q_vals.append([])
+
     if segmentation == "quickshift":
         # Quckschift
         save_dir = os.path.join("parameter_results", "quickshift")
         if not os.path.isdir(save_dir):
             os.mkdir(save_dir)
 
-        best_aucs = []
-        best_parameters = []
-        times = []
         for i in range(0, 6):
             for j in range(1, 5):
                 for k in range(0, 4):
-                    for r in range(0,5):
+                    for r in range(0, 5):
                         kernel_size = 1 + i
                         max_dist = kernel_size * j
                         ratio = k * 0.33
-                        num_samples = 1000 + (r*500)
+                        num_samples = 1000 + (r * 500)
 
-                        segmentation_fn = (lambda x : seg.quickshift(x, kernel_size=kernel_size, max_dist= max_dist ,ratio=ratio, convert2lab=False))
+                        segmentation_fn = (
+                            lambda x: seg.quickshift(x, kernel_size=kernel_size, max_dist=max_dist, ratio=ratio,
+                                                     convert2lab=False))
 
-                        test_parameters(states, segmentation_fn, (kernel_size,max_dist, ratio, num_samples), best_aucs,
-                                        best_parameters, times, save_dir, num_samples=num_samples)
+                        test_parameters(states, segmentation_fn, (kernel_size, max_dist, ratio, num_samples), q_vals,
+                                        best_parameters, times, num_samples=num_samples,
+                                        my_explainer_ = my_explainer, insertion_metric = insertion )
+
+        # save the value arrays modified by test parameters
+        save_list = [best_parameters, times, q_vals]
+        np.save(os.path.join(save_dir, "best_parameters_" + ins_color), save_list)
 
     if segmentation == "felzenswalb":
         save_dir = os.path.join("parameter_results", "felzenswalb")
         if not os.path.isdir(save_dir):
             os.mkdir(save_dir)
 
-        best_aucs = []
-        best_parameters = []
-        times = []
         for i in range(0, 6):
             for j in range(0, 5):
                 for k in range(0, 9):
@@ -121,17 +117,19 @@ if __name__ == '__main__':
                         segmentation_fn = (
                             lambda x: seg.felzenszwalb(x, scale=scale, sigma=sigma, min_size=min_size))
 
-                        test_parameters(states, segmentation_fn, (scale, sigma, min_size, num_samples), best_aucs, best_parameters, times,
-                                        save_dir, num_samples= num_samples)
+                        test_parameters(states, segmentation_fn, (scale, sigma, min_size, num_samples), q_vals,
+                                        best_parameters, times, num_samples=num_samples,
+                                        my_explainer_ = my_explainer, insertion_metric = insertion )
+
+        # save the value arrays modified by test parameters
+        save_list = [best_parameters, times, q_vals]
+        np.save(os.path.join(save_dir, "best_parameters_" + ins_color), save_list)
 
     if segmentation == "slic":
         save_dir = os.path.join("parameter_results", "slic")
         if not os.path.isdir(save_dir):
             os.mkdir(save_dir)
 
-        best_aucs = []
-        best_parameters = []
-        times = []
         for i in range(0, 6):
             for j in range(0, 5):
                 for k in range(0, 5):
@@ -144,150 +142,135 @@ if __name__ == '__main__':
                         segmentation_fn = (
                             lambda x: seg.slic(x, n_segments=n_segments, compactness=compactness, sigma=sigma))
 
-                        test_parameters(states, segmentation_fn, (n_segments, compactness, sigma, num_samples), best_aucs, best_parameters,
-                                       times, save_dir, num_samples=num_samples)
+                        test_parameters(states, segmentation_fn, (n_segments, compactness, sigma, num_samples),
+                                        q_vals, best_parameters,
+                                        times, num_samples=num_samples,
+                                        my_explainer_ = my_explainer, insertion_metric = insertion )
+
+        # save the value arrays modified by test parameters
+        save_list = [best_parameters, times, q_vals]
+        np.save(os.path.join(save_dir, "best_parameters_" + ins_color), save_list)
 
     if segmentation == "patches":
         save_dir = os.path.join("parameter_results", "patches")
         if not os.path.isdir(save_dir):
             os.mkdir(save_dir)
 
-        best_aucs = []
-        best_parameters = []
         for i in range(4, 16):
             for j in range(4, 16):
+                segmentation_fn = (
+                    lambda x: rectangle_segmentation(x, (i, j)))
 
-                    segmentation_fn = (
-                        lambda x: rectangle_segmentation(x, (i,j)))
+                test_parameters(states, segmentation_fn, (i, j), q_vals, best_parameters,
+                                        my_explainer_ = my_explainer, insertion_metric=insertion)
 
-                    test_parameters(states, segmentation_fn, (i,j), best_aucs, best_parameters, save_dir)
+            # save the value arrays modified by test parameters
+        save_list = [best_parameters, times, q_vals]
+        np.save(os.path.join(save_dir, "best_parameters_" + ins_color), save_list)
 
     if segmentation == "rise":
         save_dir = os.path.join("parameter_results", "rise")
         if not os.path.isdir(save_dir):
             os.mkdir(save_dir)
 
-        best_aucs = []
-        best_parameters = []
-        times = []
         for i in range(1, 10):
             for j in range(4, 25):
-                for k in range(1,7):
-                    for l in range (0,2):
+                for k in range(1, 7):
+                    for l in range(0, 2):
                         probability = 0.1 * i
                         mask_size = j
                         number_of_masks = 500 * k
                         softmax = l
 
-                        my_explainer = explainer(model=model) # need new explainer since the masks are saved
+                        my_explainer = explainer(model=model)  # need new explainer since the masks are saved
 
-                        sum = 0
                         time = 0
-                        for state in states:
+                        for idx in range(len(states)):
+                            state = states[idx]
                             input = np.squeeze(state[0])
                             start = timeit.default_timer()
                             saliency_map = my_explainer.generate_rise_prediction(input,
-                                                                                probability=probability,
-                                                                                use_softmax = softmax,
-                                                                                number_of_mask = number_of_masks,
-                                                                                mask_size=mask_size)
+                                                                                 probability=probability,
+                                                                                 use_softmax=softmax,
+                                                                                 number_of_mask=number_of_masks,
+                                                                                 mask_size=mask_size)
                             stop = timeit.default_timer()
                             time += stop - start
                             print("time:" + str(stop - start))
-                            score = insertion.single_run(img_tensor=input, explanation=saliency_map, name=state[1],
-                                                         approach="lime", use_normalization=True, plot=False)
-                            auc = score.sum() / (score.shape[0])
-                            sum += auc
+                            scores = insertion.single_run(img_tensor=input, explanation=saliency_map)
+                            q_vals[idx].append(scores)
 
-                        parameters=(probability,mask_size,number_of_masks, softmax)
-                        best_aucs.append(sum)
+                        parameters = (probability, mask_size, number_of_masks, softmax)
+
                         best_parameters.append(parameters)
                         times.append(time)
-
-                        data_frame = pd.DataFrame()
-                        data_frame["aucs"] = best_aucs
-                        data_frame["params"] = best_parameters
-                        data_frame["time"] = times
-
-                        data_frame.to_csv(os.path.join(save_dir, "best_parameters_" + ins_color + ".csv"))
 
     if segmentation == "occlusion":
         save_dir = os.path.join("parameter_results", "occl")
         if not os.path.isdir(save_dir):
             os.mkdir(save_dir)
 
-        best_aucs = []
-        best_parameters = []
-        times = []
         for i in range(1, 11):
-            for j in range(0,2):
-                for k in range(0,2):
+            for j in range(0, 2):
+                for k in range(0, 2):
                     patch_size = i
                     color = 0.5 * j
                     softmax = k
                     parameters = (patch_size, color, softmax)
 
-                    sum = 0
                     time = 0
-                    for state in states:
+                    for idx in range(len(states)):
+                        state = states[idx]
                         input = np.squeeze(state[0])
                         start = timeit.default_timer()
-                        saliency_map = my_explainer.generate_occlusion_explanation(input=input, patch_size=patch_size, color=color,
-                                                                               use_softmax=softmax)
+                        saliency_map = my_explainer.generate_occlusion_explanation(input=input, patch_size=patch_size,
+                                                                                   color=color,
+                                                                                   use_softmax=softmax)
                         stop = timeit.default_timer()
                         time += stop - start
                         print("time:" + str(stop - start))
-                        score = insertion.single_run(img_tensor=input, explanation=saliency_map, name=state[1],
-                                                     approach="not_used", use_normalization=True, plot=False)
-                        auc = score.sum() / (score.shape[0])
-                        sum += auc
+                        scores = insertion.single_run(img_tensor=input, explanation=saliency_map)
+                        q_vals[idx].append(scores)
 
-                    best_aucs.append(sum)
                     best_parameters.append(parameters)
                     times.append(time)
-
-                    data_frame = pd.DataFrame()
-                    data_frame["aucs"] = best_aucs
-                    data_frame["params"] = best_parameters
-                    data_frame["time"] = times
-
-                    data_frame.to_csv(os.path.join(save_dir, "best_parameters_" + ins_color + ".csv"))
 
     if segmentation == "noise":
         save_dir = os.path.join("parameter_results", "noise")
         if not os.path.isdir(save_dir):
             os.mkdir(save_dir)
 
-        best_aucs = []
-        best_parameters = []
-        times = []
         for i in range(1, 11):
             radius = i
             parameters = (radius)
 
-            sum = 0
             time = 0
-            for state in states:
+            for idx in range(len(states)):
+                state = states[idx]
                 input = np.squeeze(state[0])
                 start = timeit.default_timer()
                 saliency_map = my_explainer.generate_greydanus_explanation(input, r=radius, blur=True)
                 stop = timeit.default_timer()
                 time += stop - start
                 print("time:" + str(stop - start))
-                score = insertion.single_run(img_tensor=input, explanation=saliency_map, name=state[1],
-                                             approach="not_used", use_normalization=True, plot=False)
-                auc = score.sum() / (score.shape[0])
-                sum += auc
+                scores = insertion.single_run(img_tensor=input, explanation=saliency_map)
+                q_vals[idx].append(scores)
 
-            best_aucs.append(sum)
             best_parameters.append(parameters)
             times.append(time)
 
-            data_frame = pd.DataFrame()
-            data_frame["aucs"] = best_aucs
-            data_frame["params"] = best_parameters
-            data_frame["time"] = times
+    save_list = [best_parameters, times, q_vals]
+    np.save(os.path.join(save_dir, "best_parameters_" + ins_color), save_list)
 
-            data_frame.to_csv(os.path.join(save_dir, "best_parameters_" + ins_color + ".csv"))
+
+if __name__ == '__main__':
+    state_path_ = "HIGHLIGHTS_states/"
+    state_output_path = "output_highlight_states/"
+    model = keras.models.load_model('models/MsPacman_5M_ingame_reward.h5')
+
+    for segmentation in ["occl", "noise","rise", "quickshift", "slic", "felzenswalb"]:
+        for ins_color in ["black", "random"]:
+            parameter_test(segmentation, ins_color, state_path = state_path_)
+
 
 

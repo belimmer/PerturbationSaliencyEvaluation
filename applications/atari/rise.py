@@ -112,70 +112,34 @@ class CausalMetric():
         self.step = step
         self.substrate_fn = substrate_fn
 
-    def single_run(self, img_tensor, explanation, name, approach, use_normalization=False, plot=True):
+    def single_run(self, img_tensor, explanation):
         r"""Run metric on one image-saliency pair.
         Args:
             img_tensor (Tensor): normalized image tensor.
             explanation (np.ndarray): saliency map.
-            verbose (int): in [0, 1, 2].
-                0 - return list of scores.
-                1 - also plot final step.
-                2 - also plot every step and print 2 top classes.
-            save_to (str): directory to save every step plots to.
         Return:
-            scores (nd.array): Array containing scores at every step.
+            scores (nd.array): Array containing q-vals at every step.
         """
-        save_to = "figures/" + approach + "/" + self.mode + "/"
         HW = img_tensor.shape[0] * img_tensor.shape[1]
         z = img_tensor.shape[2]
-        inp = np.expand_dims(img_tensor, axis=0)
-        pred = self.model.predict(inp)
-        c = np.argmax(np.squeeze(pred))
         n_steps = (HW + self.step - 1) // self.step
 
-        # used for normalization later
-        max_value_old_prediciton = pred.max()
-
         if self.mode == 'del':
-            ylabel = 'Pixels deleted'
+            # 'Pixels deleted'
             start = img_tensor
             finish = self.substrate_fn(img_tensor)
         elif self.mode == 'ins':
-            ylabel = 'Pixels inserted'
+            # 'Pixels inserted'
             start = self.substrate_fn(img_tensor)
             finish = img_tensor
 
-        scores = np.empty(n_steps + 1)
+        scores = []
         # Coordinates of pixels in order of decreasing saliency
         salient_order = np.flip(np.argsort(explanation.reshape(-1, HW), axis=1), axis=-1)
         for i in range(n_steps+1):
             pred = self.model.predict(np.expand_dims(start, axis=0))
-            if use_normalization:
-                if max_value_old_prediciton != 0:
-                    pred /= max_value_old_prediciton
-                else:
-                    # set all values to 0 if the original prediction had q value 0
-                    pred *= 0
-            scores[i] = pred[0, c]
+            scores.append(np.squeeze(pred))
 
-            if plot:
-                plt.figure(figsize=(10, 5))
-                plt.subplot(121)
-                plt.axis('off')
-
-                plt.subplot(122)
-                plt.plot(np.arange(i + 1) / n_steps, scores[:i + 1])
-                plt.xlim(-0.1, 1.1)
-                plt.ylim(0, 1.05)
-                plt.fill_between(np.arange(i + 1) / n_steps, 0, scores[:i + 1], alpha=0.4)
-                plt.xlabel(ylabel)
-                plt.ylabel("Probability of original prediction")
-                if save_to:
-                    if i == n_steps:
-                        plt.savefig(save_to + name +'_{:03d}.png'.format(i))
-                    plt.close()
-                else:
-                    plt.show()
             if i < n_steps:
                 coords = salient_order[:, self.step * i:self.step * (i + 1)]
                 start_tmp = start.reshape(HW, z)
@@ -183,4 +147,6 @@ class CausalMetric():
                 for coord in coords:
                     start_tmp[coord, :] = finish_tmp[coord, :]
                 start = start_tmp.reshape(start.shape)
+
+        scores = np.asarray(scores)
         return scores
