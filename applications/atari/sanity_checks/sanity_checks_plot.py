@@ -56,7 +56,7 @@ def show_and_save_plt(ax ,file_name, y_label=None, ylim =None, label_size = 18, 
         ax.set(ylabel=None)
 
     file_name = os.path.join('figures', file_name)
-    if not (os.path.isdir(file_name)):
+    if not (os.path.exists(file_name)):
         os.makedirs(file_name)
         os.rmdir(file_name)
     plt.tight_layout()
