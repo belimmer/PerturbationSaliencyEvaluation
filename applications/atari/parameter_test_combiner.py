@@ -7,25 +7,18 @@ import applications.atari.evaluation_utils as evaluation_utils
 import pandas as pd
 
 
-def combine_aucs(segmentation_):
-    """combines the aucs obtained with black and random occlusion insertion metric by taking simple mean"""
-    results_path = os.path.join("parameter_results", segmentation_)
+def load_combined_values(path1, path2):
+    """combines the values obtained with black and random occlusion insertion metric"""
+    black_params, black_times, black_q_vals = load_values(path1)
+    random_params, random_times, random_q_vals = load_values(path2)
 
-    black_values = pd.read_csv(os.path.join(results_path, "best_parameters_black.csv"))
-    random_values = pd.read_csv(os.path.join(results_path, "best_parameters_random.csv"))
+    # both tests should have been done with the same parameters
+    assert((black_params == random_params))
 
-    black_aucs = black_values["aucs"].values
-    random_aucs = random_values["aucs"].values
+    combined_times = np.asarray(black_times) + np.asarray(random_times)
+    combined_q_vals = black_q_vals + random_q_vals
 
-    black_aucs = np.asarray(black_aucs)
-    random_aucs = np.asarray(random_aucs)
-
-    combined_aucs = black_aucs + random_aucs
-    combined_aucs = combined_aucs / 2
-
-    black_values["aucs"] = combined_aucs
-
-    black_values.to_csv(os.path.join(results_path, "best_parameters_mean.csv"))
+    return black_params, combined_times, combined_q_vals
 
 
 def load_values(filename):
@@ -37,23 +30,26 @@ def load_values(filename):
     return parameters_, times_, q_vals_
 
 
-def calculate_aucs(load_path, save_path):
+def calculate_aucs(parameters, times, q_vals, save_path):
     """ calculates the AUC from the raw insertion metric results.
      Saves the results of the parameter test in a readable csv"""
-    parameters, times, q_vals = load_values(load_path)
 
     aucs = []
+    stds = []
     for idx in range(len(parameters)):
-        auc_sum = 0
+        auc_list = []
         for state_array in q_vals:
             state_q_vals = state_array[idx]
             insertion_result_ = evaluation_utils.process_single_insertion_result(state_q_vals)
-            auc_sum += evaluation_utils.auc(insertion_result_)
-        aucs.append(auc_sum)
+            auc_list.append(evaluation_utils.auc(insertion_result_))
+        auc_list = np.asarray(auc_list)
+        stds.append(auc_list.std())
+        aucs.append(auc_list.mean())
 
     data_frame = pd.DataFrame()
     data_frame["aucs"] = aucs
     data_frame["params"] = parameters
+    data_frame["Standard deviation"] = stds
     data_frame["time"] = times
 
     data_frame.to_csv(save_path)
@@ -66,17 +62,20 @@ if __name__ == '__main__':
 
         # calculate the values for black occlusion insertion metric
         out_path = os.path.join("parameter_results", seg, "best_parameters_black.csv")
-        res_path = os.path.join("parameter_results", seg, "best_parameters_black.npy")
-        calculate_aucs(res_path, out_path)
+        black_path = os.path.join("parameter_results", seg, "best_parameters_black.npy")
+        params, time_vals, q_values = load_values(black_path)
+        calculate_aucs(params, time_vals, q_values, out_path)
 
         # calculate the values for random occlusion insertion metric
         out_path = os.path.join("parameter_results", seg, "best_parameters_random.csv")
-        res_path = os.path.join("parameter_results", seg, "best_parameters_random.npy")
-        calculate_aucs(res_path, out_path)
+        random_path = os.path.join("parameter_results", seg, "best_parameters_random.npy")
+        params, time_vals, q_values = load_values(random_path)
+        calculate_aucs(params, time_vals, q_values, out_path)
 
         # combine the values for random and black occlusion
-        combine_aucs(seg)
-
+        out_path = os.path.join("parameter_results", seg, "best_parameters_mean.csv")
+        params, time_vals, q_values = load_combined_values(black_path, random_path)
+        calculate_aucs(params, time_vals, q_values, out_path)
 
 
 
