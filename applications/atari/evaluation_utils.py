@@ -3,15 +3,20 @@
 import numpy as np
 
 
-def process_single_insertion_result(arr):
+def process_single_insertion_result(arr, use_advantage=True):
+    """ processes results of a single insertion result given as an array *arr* of q-value arrays for each step of the insertion metric
+    :param use_advantage: should the advantage of the original action or the raw q-value of this action be used
+    :return : the result of the insertion metric as array containing one value per insertion step"""
     og_prediction = arr[-1]
     og_action = np.argmax(og_prediction)
     insertion_result = np.empty(len(arr))
     for i in range(len(arr)):
-        insertion_result[i] = advantage(arr[i], og_action)
-        # insertion_result[i] = arr[i][og_action]
-    # normalize such that the result goes from 0 for the fully perturbed image to 1 for the full image
-    # insertion_result = normalize(insertion_result)
+        if use_advantage:
+            insertion_result[i] = advantage(arr[i], og_action)
+        else:
+            insertion_result[i] = arr[i][og_action]
+    if not use_advantage:
+        insertion_result /= insertion_result[-1]
     return insertion_result
 
 
@@ -44,8 +49,18 @@ def auc(arr):
     """
     # arr2 = arr - arr[0]
     auc = arr.sum() / (arr.shape[0])
-    print(round(auc,3))
     return auc
+
+
+def calculate_aucs(arr):
+    """ Calculate mean auc and standard deviation of an arr of insertion metric results """
+    aucs = []
+    for insertion_result in arr:
+        auc_val = auc(insertion_result)
+        aucs.append(auc_val)
+
+    aucs = np.asarray(aucs)
+    return round(np.mean(aucs), 3), round(np.std(aucs), 3)
 
 
 def aoc(arr):

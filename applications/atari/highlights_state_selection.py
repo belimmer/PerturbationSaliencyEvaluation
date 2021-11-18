@@ -11,8 +11,8 @@ import pandas as pd
 import os
 from bisect import bisect
 from bisect import insort_left
-import image_utils
 from scipy.spatial import distance
+from shutil import copy
 
 
 
@@ -59,6 +59,7 @@ def random_state_selection(state_importance_df, budget, context_length, minimum_
         summary_states_with_context.extend((range(state-context_length,state+context_length)))
     return summary_states, summary_states_with_context
 
+
 def highlights(state_importance_df, budget, context_length, minimum_gap):
     ''' generate highlights summary
     :param state_importance_df: dataframe with 2 columns: state and importance score of the state
@@ -101,6 +102,36 @@ def highlights(state_importance_df, budget, context_length, minimum_gap):
         summary_states_with_context.extend((range(state-context_length,state+context_length)))
     return summary_states, summary_states_with_context
 
+
+def highlights_diverse_importance(state_importance_df, budget, context_length):
+    ''' generate highlights summary, that chooses states of different important values.
+    Used to search for suitable parameter search testbeds.
+    :param state_importance_df: dataframe with 2 columns: state and importance score of the state
+    :param budget: allowed length of summary - note this includes only the important states, it doesn't count context
+    around them
+    :param context_length: how many states to show around the chosen important state (e.g., if context_lenght=10, we
+    will show 10 states before and 10 states after the important state
+    :return: a list with the indices of the important states, and a list with all summary states (includes the context)
+    '''
+    sorted_df = state_importance_df.sort_values(['importance'], ascending=False)
+
+    length = len(state_importance_df.index)
+
+    stepsize = int(length / budget)
+
+    summary_states = []
+    df_index = 0
+    for state in range(budget):
+
+        state_index = sorted_df["state"].values[df_index]
+
+        insort_left(summary_states,state_index)
+        df_index += stepsize
+
+    summary_states_with_context = []
+    for state in summary_states:
+        summary_states_with_context.extend((range(state-context_length,state+context_length)))
+    return summary_states, summary_states_with_context
 
 
 def find_similar_state_in_summary(state_importance_df, summary_states, new_state, distance_metric, distance_threshold=None):
@@ -210,12 +241,19 @@ def highlights_div(state_importance_df, budget, context_length, minimum_gap, dis
     return summary_states, summary_states_with_context
 
 
-def compute_states_importance(states_q_values_df, compare_to='worst'):
+def compute_states_importance(states_q_values_df, compare_to='worst', inverse=False):
+    """computes the importance values for each state.
+    worst compares the best and worst action
+    second compares the best and second best action
+    if inverse is true then the results are multiplied with -1 to get the least important states"""
     if compare_to == 'worst':
         states_q_values_df['importance'] = states_q_values_df['q_values'].apply(lambda x: np.max(x)-np.min(x))
     elif compare_to == 'second':
         states_q_values_df['importance'] = states_q_values_df['q_values'].apply(lambda x: np.max(x)-np.partition(x.flatten(), -2)[-2])
+    if inverse:
+        states_q_values_df['importance'] = states_q_values_df['q_values'].apply(lambda x: -1 * x)
     return states_q_values_df
+
 
 def read_q_value_files(path):
     ''' reading q values from files. Assume each state is a seperate text file with a list of q values
@@ -262,6 +300,7 @@ def read_feature_files(path):
     state_features_df = pd.DataFrame({'state':states, 'features':feature_vector_list})
     return state_features_df
 
+
 def read_input_files(path):
     '''reading state inputs from files. Assume each state is a seperate npy file with a array
     :param path: path to the directory where the npy files are stored
@@ -290,7 +329,7 @@ if __name__ == '__main__':
     test = read_input_files('stream/state')
 
     q_values_df = read_q_value_files('stream/q_values')
-    states_q_values_df = compute_states_importance(q_values_df, compare_to='second')
+    states_q_values_df = compute_states_importance(q_values_df, compare_to='second', inverse=False)
     states_q_values_df.to_csv('stream/states_importance_second.csv')
     states_q_values_df = pd.read_csv('stream/states_importance_second.csv')
     features_df = read_feature_files('stream/features')
@@ -306,8 +345,36 @@ if __name__ == '__main__':
                                 .replace('[','')
                                 .replace(']','')
                                 .replace('  ',' '), sep=' '))
-    summary_states, summary_states_with_context = highlights_div(state_features_importance_df, 5,10,10)
+    summary_states, summary_states_with_context = highlights_div(state_features_importance_df, 5, 10, 10,
+                                                                    percentile_threshold= 3)
+    # for finding suitable test sets for the parameter search we manually used different percentile_thresholds, the
+    # *inverse* parameter of *compute_state_importance* and the *highlights_diverse_importance* function from the comment below
+    # summary_states, summary_states_with_context = highlights_diverse_importance(state_features_importance_df, 10, 10)
+
     # for breakout we used:
     # summary_states, summary_states_with_context = highlights_div(state_features_importance_df, 5, 10, 10,
     #                                                             percentile_threshold=75)
     print('div:', summary_states)
+
+    # copy the chosen states into another directory, from there we copied the by hand
+    output_dir = "highlight_states"
+
+    if not (os.path.exists(output_dir)):
+        os.mkdir(output_dir)
+    for state_index in summary_states:
+        # copy the screens
+        # each state is comprised of 4 skipped frames
+        for i in range(4):
+            screen_name = "screen_" + str(state_index) + "_" + str(i) + ".png"
+            source_file = os.path.join("stream", "screen", screen_name)
+            dst_file = os.path.join(output_dir, screen_name)
+            copy(source_file, dst_file)
+        # copy the state
+        state_name = "state_" + str(state_index) + ".npy"
+        source_file = os.path.join("stream", "state", state_name)
+        dst_file = os.path.join(output_dir, state_name)
+        copy(source_file, dst_file)
+        state_name = "state_" + str(state_index) + ".png"
+        source_file = os.path.join("stream", "state", state_name)
+        dst_file = os.path.join(output_dir, state_name)
+        copy(source_file, dst_file)

@@ -8,29 +8,8 @@ import seaborn as sns
 import os
 import pandas as pd
 
+import applications.atari.evaluation_utils as evaluation_utils
 from applications.atari.sanity_checks.sanity_checks_plot import show_and_save_plt
-
-
-# Normalizing formula from https://arxiv.org/pdf/2001.00396.pdf
-# did not use this since we wanted to show the confidence range
-def normalize(arr):
-    out = []
-    b = arr[0]
-    t_1 = arr[-1]
-    for val in arr:
-        out.append((val - b)/(t_1 - b))
-    out = np.asarray(out)
-    return out
-
-def auc(arr):
-    """
-    simple Area Under the curve calculation using sum_of_values/number_of_values
-    :param data:
-    :return:
-    """
-    auc = arr.sum() / (arr.shape[0])
-    print(round(auc,3))
-    return auc
 
 
 def load_scores(dir_name):
@@ -61,14 +40,17 @@ def load_scores(dir_name):
     x = np.concatenate((x, x_7), axis=0)
     x = np.concatenate((x, x_8), axis=0)
     x = np.concatenate((x, x_9), axis=0)
-    # average the values for each step of the insertion game over all tested inputs
-    number = x.shape[0]
-    x_temp = np.sum(x, axis=0)
-    x_temp = x_temp / number
+
+    new_x = np.zeros((x.shape[0], x.shape[1]))
+    # process the q-vals
+    for i in range(len(x)):
+        new_x[i] = evaluation_utils.process_single_insertion_result(x[i])
+
+    x = new_x
 
     # print the AUC
-    print(dir_name)
-    auc(x_temp)
+    # print(dir_name)
+    # evaluation_utils.auc(x_temp)
 
     return x
 
@@ -80,9 +62,10 @@ if __name__ == '__main__':
     NOISE_LIME = False
 
     # the color used perturbing the image in the insertion metric
-    INSERTION_COLOR = "black_insertion"
+    INSERTION_COLOR = "combined"
 
     for game in GAMES:
+        print(game)
         if game == "pacman":
             approaches = [
                 "occl_4_0",
@@ -158,8 +141,19 @@ if __name__ == '__main__':
         # Plot settings
         first = True
         for approach in approaches:
-            dir_name_ = os.path.join(game, INSERTION_COLOR, approach)
-            scores = load_scores(dir_name_)
+            if INSERTION_COLOR == "combined":
+                dir_name_ = os.path.join(game, "random_insertion", approach)
+                scores = load_scores(dir_name_)
+                dir_name_ = os.path.join(game, "black_insertion", approach)
+                scores2 = load_scores(dir_name_)
+                scores = np.concatenate((scores,scores2), axis=0)
+            else:
+                dir_name_ = os.path.join(game, INSERTION_COLOR, approach)
+                scores = load_scores(dir_name_)
+            print(approach)
+            mean_auc, std = evaluation_utils.calculate_aucs(scores)
+            print(mean_auc)
+            print(std)
             temp_data = pd.DataFrame()
             temp_scores = []
             temp_indizes = []
@@ -190,7 +184,7 @@ if __name__ == '__main__':
         dir_name = "insertion_top"
         if NOISE_LIME:
             dir_name = "insertion_noise_and_lime"
-        show_and_save_plt(ax, os.path.join(dir_name, game + "_insertion.png"), label_size=28, tick_size=25, y_label=None,
+        show_and_save_plt(ax, os.path.join(dir_name, game + "_insertion_" + INSERTION_COLOR + ".png"), label_size=28, tick_size=25, y_label=None,
                           only_plot=False)
 
         plot_params["legend"] = "full"

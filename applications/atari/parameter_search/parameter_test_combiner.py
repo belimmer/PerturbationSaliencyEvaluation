@@ -30,7 +30,7 @@ def load_values(filename):
     return parameters_, times_, q_vals_
 
 
-def calculate_aucs(parameters, times, q_vals, save_path):
+def calculate_aucs(parameters, times, q_vals, save_path, use_advantage=True):
     """ calculates the AUC from the raw insertion metric results.
      Saves the results of the parameter test in a readable csv"""
 
@@ -40,7 +40,8 @@ def calculate_aucs(parameters, times, q_vals, save_path):
         auc_list = []
         for state_array in q_vals:
             state_q_vals = state_array[idx]
-            insertion_result_ = evaluation_utils.process_single_insertion_result(state_q_vals)
+            insertion_result_ = evaluation_utils.process_single_insertion_result(state_q_vals,
+                                                                                 use_advantage=use_advantage)
             auc_list.append(evaluation_utils.auc(insertion_result_))
         auc_list = np.asarray(auc_list)
         stds.append(auc_list.std())
