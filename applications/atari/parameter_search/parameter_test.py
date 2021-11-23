@@ -19,9 +19,9 @@ def test_parameters(_states, _segmentation_fn, parameters, q_vals, _parameters, 
     :param _states: the states the should be tested
     :param _segmentation_fn: the segmentation function used by LIME
     :param parameters: the parameters used in the segmenation function
-    :param q_vals: the list that stores the q-values during the insertion test
-    :param _parameters: the list that stores the parameters
-    :param _times: the list that stores the time values
+    :param q_vals: the list that stores the q-values during the insertion test, this function adds new values to the list
+    :param _parameters: the list that stores the parameters, this function adds new values to the list
+    :param _times: the list that stores the time values, this function adds new values to the list
     :param my_explainer_: the explainer used to create the saliency maps
     :param insertion_metric: the insertion metric object which holds for example the information if black or random baseline is used
     :param num_samples: the number of training samples for LIME
@@ -266,11 +266,10 @@ def parameter_test(segmentation, ins_color, state_path, model):
 
 
 if __name__ == '__main__':
-    state_path_ = "../HIGHLIGHTS_states/"
-    state_output_path = "../output_highlight_states/"
+    state_path_ = "Verification/highlight_states_thres30/"
     model_ = keras.models.load_model('../models/MsPacman_5M_ingame_reward.h5')
 
-    for segmentation_ in ["occl", "noise","rise", "quickshift", "slic", "felzenswalb"]:
+    for segmentation_ in ["occlusion", "noise","rise", "quickshift", "slic", "felzenswalb"]:
         for ins_color_ in ["black", "random"]:
             parameter_test(segmentation_, ins_color_, state_path = state_path_, model = model_)
 
