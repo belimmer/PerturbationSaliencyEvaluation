@@ -24,7 +24,7 @@ def load_combined_values(path1, path2):
 def load_values(filename):
     """ loads the raw parameter test results"""
     saved_values = np.load(filename, allow_pickle=True)
-    parameters_ = saved_values[0]
+    parameters_ = list(saved_values[0])
     times_ = saved_values[1]
     q_vals_ = saved_values[2]
     return parameters_, times_, q_vals_
@@ -57,7 +57,7 @@ def calculate_aucs(parameters, times, q_vals, save_path, use_advantage=True):
 
 
 if __name__ == '__main__':
-    segmentations = ["occl", "noise","rise", "felzenswalb", "quickshift", "slic"]
+    segmentations = ["occl", "noise","rise", "felzenswalb", "quickshift", "slic", "sarfa"]
 
     results_dir = "parameter_results"
 

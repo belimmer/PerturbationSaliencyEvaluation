@@ -49,7 +49,7 @@ def test_parameters(_states, _segmentation_fn, parameters, q_vals, _parameters, 
 
 
 def parameter_test(segmentation, ins_color, state_path, model):
-    assert segmentation in ["quickshift", "felzenswalb", "slic", "patches", "rise", "occlusion", "noise"]
+    assert segmentation in ["quickshift", "felzenswalb", "slic", "patches", "rise", "occlusion", "noise", "sarfa"]
     assert ins_color in ['black', 'random']
     if ins_color == "black":
         substrate_function = rise.custom_black
@@ -261,6 +261,32 @@ def parameter_test(segmentation, ins_color, state_path, model):
             best_parameters.append(parameters)
             times.append(time)
 
+    if segmentation == "sarfa":
+        save_dir = os.path.join(results_dir, "sarfa")
+        if not os.path.isdir(save_dir):
+            os.mkdir(save_dir)
+
+        for i in range(1, 11):
+            for j in range(0,2):
+                radius = i
+                blur = j
+                parameters = (radius, blur)
+
+                time = 0
+                for idx in range(len(states)):
+                    state = states[idx]
+                    input = np.squeeze(state[0])
+                    start = timeit.default_timer()
+                    saliency_map = my_explainer.generate_sarfa_explanation(input, r=radius, blur=blur)
+                    stop = timeit.default_timer()
+                    time += stop - start
+                    print("time:" + str(stop - start))
+                    scores = insertion.single_run(img_tensor=input, explanation=saliency_map)
+                    q_vals[idx].append(scores)
+
+                best_parameters.append(parameters)
+                times.append(time)
+
     save_list = [best_parameters, times, q_vals]
     np.save(os.path.join(save_dir, "best_parameters_" + ins_color), save_list)
 
@@ -269,7 +295,7 @@ if __name__ == '__main__':
     state_path_ = "Verification/highlight_states_thres30/"
     model_ = keras.models.load_model('../models/MsPacman_5M_ingame_reward.h5')
 
-    for segmentation_ in ["occlusion", "noise","rise", "quickshift", "slic", "felzenswalb"]:
+    for segmentation_ in ["occlusion", "noise","rise", "quickshift", "slic", "felzenswalb", "sarfa"]:
         for ins_color_ in ["black", "random"]:
             parameter_test(segmentation_, ins_color_, state_path = state_path_, model = model_)
 
