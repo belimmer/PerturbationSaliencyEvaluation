@@ -7,6 +7,7 @@ import applications.atari.greydanus as greydanus
 import applications.atari.custom_occlusion_sensitvity as custom_occlusion_sensitvity
 import applications.atari.custom_greydanus as custom_greydanus
 import applications.atari.custom_lime as custom_lime
+import applications.atari.sarfa as sarfa
 
 import os
 
@@ -20,7 +21,8 @@ class explainer():
         self.rise_masks = []
         self.masks_generated = False
 
-    def generate_occlusion_explanation(self, input, patch_size=5, use_softmax=False, use_old_confidence=False, color=0.0, neuron_selection = False):
+    def generate_occlusion_explanation(self, input, patch_size=5, use_softmax=False, use_old_confidence=False,
+                                       color=0.0, neuron_selection = False, **kwargs):
         """
         Generates an explanation using the Occlusion Sensitivity approach.
 
@@ -40,7 +42,8 @@ class explainer():
             proposed_action = neuron_selection
         explainer = custom_occlusion_sensitvity.CustomOcclusionSensitivity()
         saliency_map = explainer.get_sensitivity_map(image=input, model=self.model, class_index=proposed_action,
-                                                     patch_size=patch_size, use_softmax=use_softmax, use_old_confidence=use_old_confidence, color=color)
+                                                     patch_size=patch_size, use_softmax=use_softmax,
+                                                     use_old_confidence=use_old_confidence, color=color, **kwargs)
         return saliency_map
 
     def generate_lime_explanation(self, input, hide_img=True, positive_only=False, num_features=3, segmentation_fn=None
@@ -99,6 +102,21 @@ class explainer():
         else:
             explainer = custom_greydanus.custom_greydanus_explainer()
         return explainer.generate_explanation(input, self.model, radius=r, **kwargs)
+
+    def generate_sarfa_explanation(self, input, r=5, blur=True, **kwargs):
+        """
+        Generates an explanation using the SARFA approach.
+
+        Args:
+            input: state which will be explained
+            r (int): radius of the perturbation
+            blur (bool): indicates if a gaussian blur should be used to occlude the image
+
+        Returns:
+            a saliency map which functions as explanation
+        """
+        sarfa_explainer = sarfa.SarfaExplainer()
+        return sarfa_explainer.generate_explanation(input, self.model, radius=r, blur=blur, **kwargs)
 
     def generate_rise_prediction(self, input, probability=0.9, use_softmax = True, number_of_mask = 2000, mask_size=8
                                  , neuron_selection = False):

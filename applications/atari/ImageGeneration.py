@@ -153,7 +153,7 @@ if __name__ == '__main__':
 
 
 
-    approach = "noise"
+    approach = "sarfa"
     segmentation = "quickshift"
 
     if approach == "rise":
@@ -165,6 +165,9 @@ if __name__ == '__main__':
         BLUR = True
         RAW_DIFF = False
         kwargs = {"r":4, "blur":BLUR, "raw_diff": RAW_DIFF}
+    if approach == "sarfa":
+        BLUR = True
+        kwargs = {"r": 4, "blur": BLUR}
     if approach == "lime":
         kwargs = {"hide_img": False, "positive_only": True, "num_features": 5}
         if segmentation == "slic":
@@ -279,6 +282,19 @@ if __name__ == '__main__':
             lambda kwargs: analyzer4.generate_lime_explanation(**kwargs)[1])
         saliency_fn_5 = (
             lambda kwargs: analyzer5.generate_lime_explanation(**kwargs)[1])
+
+    if approach == "sarfa":
+        og_saliency_fn = (
+            lambda kwargs: original_analyzer.generate_sarfa_explanation(**kwargs))
+        saliency_fn_1 = (lambda kwargs: analyzer1.generate_sarfa_explanation(**kwargs))
+        saliency_fn_2 = (
+            lambda kwargs: analyzer2.generate_sarfa_explanation(**kwargs))
+        saliency_fn_3 = (
+            lambda kwargs: analyzer3.generate_sarfa_explanation(**kwargs))
+        saliency_fn_4 = (
+            lambda kwargs: analyzer4.generate_sarfa_explanation(**kwargs))
+        saliency_fn_5 = (
+            lambda kwargs: analyzer5.generate_sarfa_explanation(**kwargs))
 
     for state_name in os.listdir(path=state_path):
         if state_name.endswith(".npy"):

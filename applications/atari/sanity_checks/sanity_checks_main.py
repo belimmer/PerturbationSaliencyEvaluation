@@ -304,6 +304,20 @@ def sanity_check( game, approach, _file_name, **kwargs):
         saliency_fn_5 = (
             lambda x, **kwargs2: analyzer5.generate_lime_explanation(input=x, **kwargs, **kwargs2)[2])
 
+    if approach == "sarfa":
+        og_saliency_fn = (
+            lambda x, **kwargs2: original_analyzer.generate_sarfa_explanation(input=x, **kwargs, **kwargs2))
+        saliency_fn_1 = (lambda x, **kwargs2: analyzer1.generate_sarfa_explanation(input=x, **kwargs, **kwargs2))
+        saliency_fn_2 = (
+            lambda x, **kwargs2: analyzer2.generate_sarfa_explanation(input=x, **kwargs, **kwargs2))
+        saliency_fn_3 = (
+            lambda x, **kwargs2: analyzer3.generate_sarfa_explanation(input=x, **kwargs, **kwargs2))
+        saliency_fn_4 = (
+            lambda x, **kwargs2: analyzer4.generate_sarfa_explanation(input=x, **kwargs, **kwargs2))
+        saliency_fn_5 = (
+            lambda x, **kwargs2: analyzer5.generate_sarfa_explanation(input=x, **kwargs, **kwargs2))
+
+
     fixed_start = True
     if fixed_start:
         if game == "pacman":
@@ -472,3 +486,11 @@ if __name__ == '__main__':
             lambda x: seg.felzenszwalb(x, scale=1, sigma=0.25, min_size=2))
         sanity_check(game=GAME, approach=APPROACH, _file_name=file_name, hide_img=False, positive_only=True,
                      segmentation_fn=segmentation_fn, num_samples = 2500)
+
+    ### SARFA:
+    APPROACH = "sarfa"
+    for GAME in games:
+        file_name = "sarfa_4_blur"
+        BLUR = True
+        RADIUS = 4
+        sanity_check(game=GAME, approach=APPROACH, _file_name=file_name, r=RADIUS, blur=BLUR)
