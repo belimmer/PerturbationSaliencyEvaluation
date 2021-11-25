@@ -20,7 +20,6 @@ def load_combined_values(path1, path2):
 
     return black_params, combined_times, combined_q_vals
 
-
 def load_values(filename):
     """ loads the raw parameter test results"""
     saved_values = np.load(filename, allow_pickle=True)
@@ -62,23 +61,57 @@ if __name__ == '__main__':
     results_dir = "parameter_results"
 
     for seg in segmentations:
+        for use_adv in range(0,2):
+            if use_adv:
+                prefix = "advantage"
+            else:
+                prefix = "qval"
+            # calculate the values for black occlusion insertion metric
+            out_path = os.path.join(results_dir, seg, prefix + "_parameters_black.csv")
+            black_path = os.path.join(results_dir, seg, "best_parameters_black.npy")
+            params, time_vals, q_values = load_values(black_path)
+            calculate_aucs(params, time_vals, q_values, out_path, use_advantage=use_adv)
 
-        # calculate the values for black occlusion insertion metric
-        out_path = os.path.join(results_dir, seg, "best_parameters_black.csv")
-        black_path = os.path.join(results_dir, seg, "best_parameters_black.npy")
-        params, time_vals, q_values = load_values(black_path)
-        calculate_aucs(params, time_vals, q_values, out_path)
+            # calculate the values for random occlusion insertion metric
+            out_path = os.path.join(results_dir, seg, prefix + "_parameters_random.csv")
+            random_path = os.path.join(results_dir, seg, "best_parameters_random.npy")
+            params, time_vals, q_values = load_values(random_path)
+            calculate_aucs(params, time_vals, q_values, out_path, use_advantage=use_adv)
 
-        # calculate the values for random occlusion insertion metric
-        out_path = os.path.join(results_dir, seg, "best_parameters_random.csv")
-        random_path = os.path.join(results_dir, seg, "best_parameters_random.npy")
-        params, time_vals, q_values = load_values(random_path)
-        calculate_aucs(params, time_vals, q_values, out_path)
+            # combine the values for random and black occlusion
+            out_path = os.path.join(results_dir, seg, prefix + "_parameters_mean.csv")
+            params, time_vals, q_values = load_combined_values(black_path, random_path)
+            calculate_aucs(params, time_vals, q_values, out_path, use_advantage=use_adv)
 
-        # combine the values for random and black occlusion
-        out_path = os.path.join(results_dir, seg, "best_parameters_mean.csv")
-        params, time_vals, q_values = load_combined_values(black_path, random_path)
-        calculate_aucs(params, time_vals, q_values, out_path)
+
+        # COMBINE the advantage and q_val results using
+        advantage_results = pd.read_csv(os.path.join(results_dir, seg, "advantage" + "_parameters_mean.csv"))
+        q_val_results = pd.read_csv(os.path.join(results_dir, seg, "qval" + "_parameters_mean.csv"))
+
+        advantage_aucs = advantage_results["aucs"].values
+        q_val_aucs = q_val_results["aucs"].values
+
+        mean_advantage = np.mean(advantage_aucs)
+        std_advantage = np.std(advantage_aucs)
+
+        mean_q_vals = np.mean(q_val_aucs)
+        std_q_vals = np.std(q_val_aucs)
+
+        #calculate z values
+        advantage_aucs = (advantage_aucs - mean_advantage)/std_advantage
+        std_q_vals = (q_val_aucs - mean_q_vals)/ std_q_vals
+
+
+        mean_aucs = advantage_aucs + std_q_vals
+
+        final_df = pd.DataFrame()
+        final_df["aucs"] = mean_aucs
+        final_df["param" \
+                 "s"] = advantage_results["params"]
+        final_df["time"] = advantage_results["time"] / 20
+
+        final_df.to_csv(os.path.join(results_dir, seg, "final_parameters_results.csv"))
+
 
 
 
