@@ -141,10 +141,10 @@ if __name__ == '__main__':
 
 
             # RANDOM BASELINE
-            save_dir_ = os.path.join(dir, "rnd_baseline")
-            saliency_fn_ = random_baseline
-            test_one_approach(saliency_fn=saliency_fn_, model=model_, save_dir=save_dir_, _GAME=GAME,
-                              insertion_substrate_fn= insertion_fn)
+            # save_dir_ = os.path.join(dir, "rnd_baseline")
+            # saliency_fn_ = random_baseline
+            # test_one_approach(saliency_fn=saliency_fn_, model=model_, save_dir=save_dir_, _GAME=GAME,
+            #                   insertion_substrate_fn= insertion_fn)
 
             # OCCLUSION
             PATCH_SIZE = 2
@@ -153,22 +153,24 @@ if __name__ == '__main__':
             save_dir_ = os.path.join(dir, "occl_" + str(PATCH_SIZE) + "_" + str(COLOR) + "_" + str(SOFTMAX))
             saliency_fn_ = (lambda x: (my_explainer.generate_occlusion_explanation(input=x, patch_size=PATCH_SIZE, color=COLOR,
                                                                                    use_softmax=SOFTMAX)))
-            test_one_approach(saliency_fn=saliency_fn_, model=model_, save_dir=save_dir_, _GAME=GAME)
+            test_one_approach(saliency_fn=saliency_fn_, model=model_, save_dir=save_dir_, _GAME=GAME,
+                              insertion_substrate_fn=insertion_fn)
 
             # NOISE
             RADIUS = 3
             BLUR = 1
             save_dir_ = os.path.join(dir, "noise_" + str(RADIUS) + "_" + str(BLUR))
             saliency_fn_ = (lambda x: my_explainer.generate_greydanus_explanation(x, r=RADIUS, blur=BLUR))
-            test_one_approach(saliency_fn=saliency_fn_, model=model_, save_dir=save_dir_, _GAME=GAME)
+            test_one_approach(saliency_fn=saliency_fn_, model=model_, save_dir=save_dir_, _GAME=GAME,
+                              insertion_substrate_fn=insertion_fn)
 
             # SARFA
             RADIUS = 2
             BLUR = 0
             save_dir_ = os.path.join(dir, "sarfa_" + str(RADIUS) + "_" + str(BLUR))
             saliency_fn_ = (lambda x: my_explainer.generate_sarfa_explanation(x, r=RADIUS, blur=BLUR))
-            test_one_approach(saliency_fn=saliency_fn_, model=model_, save_dir=save_dir_, _GAME=GAME)
-
+            test_one_approach(saliency_fn=saliency_fn_, model=model_, save_dir=save_dir_, _GAME=GAME,
+                              insertion_substrate_fn=insertion_fn)
 
             # RISE
             PROBABILITY = 0.5
@@ -182,7 +184,8 @@ if __name__ == '__main__':
                                                                              use_softmax=SOFTMAX,
                                                                              number_of_mask=NUM_MASKS,
                                                                              mask_size=MASK_SIZE)))
-            test_one_approach(saliency_fn=saliency_fn_, model=model_, save_dir=save_dir_, _GAME=GAME)
+            test_one_approach(saliency_fn=saliency_fn_, model=model_, save_dir=save_dir_, _GAME=GAME,
+                              insertion_substrate_fn=insertion_fn)
 
             # LIME
             # SLIC
@@ -200,7 +203,8 @@ if __name__ == '__main__':
                                                                               positive_only=True,
                                                                               segmentation_fn=segmentation_fn,
                                                                               num_samples=NUM_SAMPLES))[2])
-            test_one_approach(saliency_fn=saliency_fn_, model=model_, save_dir=save_dir_, _GAME=GAME)
+            test_one_approach(saliency_fn=saliency_fn_, model=model_, save_dir=save_dir_, _GAME=GAME,
+                              insertion_substrate_fn=insertion_fn)
 
             # QUICKSHIFT
             KERNEL_SIZE = 1
@@ -215,7 +219,8 @@ if __name__ == '__main__':
                                                                               positive_only=True,
                                                                               segmentation_fn=segmentation_fn,
                                                                               num_samples=NUM_SAMPLES))[2])
-            test_one_approach(saliency_fn=saliency_fn_, model=model_, save_dir=save_dir_, _GAME=GAME)
+            test_one_approach(saliency_fn=saliency_fn_, model=model_, save_dir=save_dir_, _GAME=GAME,
+                              insertion_substrate_fn=insertion_fn)
 
             # FELZENSWALB (scale, sigma, min_size, num_samples)
             SCALE = 21
@@ -231,4 +236,6 @@ if __name__ == '__main__':
                                                                               positive_only=True,
                                                                               segmentation_fn=segmentation_fn,
                                                                               num_samples=NUM_SAMPLES))[2])
-            test_one_approach(saliency_fn=saliency_fn_, model=model_, save_dir=save_dir_, _GAME=GAME)
+            test_one_approach(saliency_fn=saliency_fn_, model=model_, save_dir=save_dir_, _GAME=GAME,
+                              insertion_substrate_fn=insertion_fn)
+            
