@@ -83,32 +83,23 @@ if __name__ == '__main__':
             params, time_vals, q_values = load_combined_values(black_path, random_path)
             calculate_aucs(params, time_vals, q_values, out_path, use_advantage=use_adv)
 
-
-        # COMBINE the advantage and q_val results using
+        # COMBINE the advantage and q_val results
         advantage_results = pd.read_csv(os.path.join(results_dir, seg, "advantage" + "_parameters_mean.csv"))
         q_val_results = pd.read_csv(os.path.join(results_dir, seg, "qval" + "_parameters_mean.csv"))
 
         advantage_aucs = advantage_results["aucs"].values
         q_val_aucs = q_val_results["aucs"].values
 
-        mean_advantage = np.mean(advantage_aucs)
-        std_advantage = np.std(advantage_aucs)
+        # standardize the results of advantage and qvals
+        advantage_aucs = evaluation_utils.calculate_z_values(advantage_aucs)
+        q_val_aucs = evaluation_utils.calculate_z_values(q_val_aucs)
 
-        mean_q_vals = np.mean(q_val_aucs)
-        std_q_vals = np.std(q_val_aucs)
-
-        #calculate z values
-        advantage_aucs = (advantage_aucs - mean_advantage)/std_advantage
-        std_q_vals = (q_val_aucs - mean_q_vals)/ std_q_vals
-
-
-        mean_aucs = advantage_aucs + std_q_vals
+        mean_aucs = advantage_aucs + q_val_aucs
 
         final_df = pd.DataFrame()
         final_df["aucs"] = mean_aucs
-        final_df["param" \
-                 "s"] = advantage_results["params"]
-        final_df["time"] = advantage_results["time"] / 20
+        final_df["params"] = advantage_results["params"]
+        final_df["time"] = advantage_results["time"] / 20 # divide by 20 since there are 10 states for random and black each
 
         final_df.to_csv(os.path.join(results_dir, seg, "final_parameters_results.csv"))
 

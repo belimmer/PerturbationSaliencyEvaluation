@@ -139,7 +139,96 @@ if __name__ == '__main__':
 
             dir = os.path.join("results", GAME, insertion_color + "_insertion")
 
+
+            # RANDOM BASELINE
             save_dir_ = os.path.join(dir, "rnd_baseline")
             saliency_fn_ = random_baseline
             test_one_approach(saliency_fn=saliency_fn_, model=model_, save_dir=save_dir_, _GAME=GAME,
                               insertion_substrate_fn= insertion_fn)
+
+            # OCCLUSION
+            PATCH_SIZE = 2
+            COLOR = 0
+            SOFTMAX = 0
+            save_dir_ = os.path.join(dir, "occl_" + str(PATCH_SIZE) + "_" + str(COLOR) + "_" + str(SOFTMAX))
+            saliency_fn_ = (lambda x: (my_explainer.generate_occlusion_explanation(input=x, patch_size=PATCH_SIZE, color=COLOR,
+                                                                                   use_softmax=SOFTMAX)))
+            test_one_approach(saliency_fn=saliency_fn_, model=model_, save_dir=save_dir_, _GAME=GAME)
+
+            # NOISE
+            RADIUS = 3
+            BLUR = 1
+            save_dir_ = os.path.join(dir, "noise_" + str(RADIUS) + "_" + str(BLUR))
+            saliency_fn_ = (lambda x: my_explainer.generate_greydanus_explanation(x, r=RADIUS, blur=BLUR))
+            test_one_approach(saliency_fn=saliency_fn_, model=model_, save_dir=save_dir_, _GAME=GAME)
+
+            # SARFA
+            RADIUS = 2
+            BLUR = 0
+            save_dir_ = os.path.join(dir, "sarfa_" + str(RADIUS) + "_" + str(BLUR))
+            saliency_fn_ = (lambda x: my_explainer.generate_sarfa_explanation(x, r=RADIUS, blur=BLUR))
+            test_one_approach(saliency_fn=saliency_fn_, model=model_, save_dir=save_dir_, _GAME=GAME)
+
+
+            # RISE
+            PROBABILITY = 0.5
+            MASK_SIZE = 8
+            NUM_MASKS = 1000
+            SOFTMAX = 0
+            save_dir_ = os.path.join(dir, "rise_" + str(PROBABILITY) + "_" + str(MASK_SIZE) + "_" + str(NUM_MASKS)
+                                     + "_" + str(SOFTMAX))
+            saliency_fn_ = (lambda x: (my_explainer.generate_rise_prediction(x,
+                                                                             probability=PROBABILITY,
+                                                                             use_softmax=SOFTMAX,
+                                                                             number_of_mask=NUM_MASKS,
+                                                                             mask_size=MASK_SIZE)))
+            test_one_approach(saliency_fn=saliency_fn_, model=model_, save_dir=save_dir_, _GAME=GAME)
+
+            # LIME
+            # SLIC
+            N_SEGMENTS = 200
+            COMPACTNESS = 10
+            SIGMA = 0.25
+            NUM_SAMPLES = 2000
+            save_dir_ = os.path.join(dir, "Lime_slic_" + str(N_SEGMENTS) + "_" + str(COMPACTNESS) + "_" + str(SIGMA)
+                                     + "_" + str(NUM_SAMPLES))
+            if not os.path.isdir(save_dir_):
+                os.makedirs(save_dir_)
+            segmentation_fn = (lambda x: seg.slic(x, n_segments=N_SEGMENTS, compactness=COMPACTNESS, sigma=SIGMA))
+            saliency_fn_ = (lambda x: (my_explainer.generate_lime_explanation(input=x,
+                                                                              hide_img=False,
+                                                                              positive_only=True,
+                                                                              segmentation_fn=segmentation_fn,
+                                                                              num_samples=NUM_SAMPLES))[2])
+            test_one_approach(saliency_fn=saliency_fn_, model=model_, save_dir=save_dir_, _GAME=GAME)
+
+            # QUICKSHIFT
+            KERNEL_SIZE = 1
+            MAX_DIST = 2
+            RATIO = 0.0
+            NUM_SAMPLES = 1500
+            save_dir_ = os.path.join(dir, "Lime_quickshift_" + str(KERNEL_SIZE) + "_" + str(MAX_DIST) + "_" +
+                                     str(RATIO) + "_" + str(NUM_SAMPLES))
+            segmentation_fn = (lambda x: seg.quickshift(x, kernel_size=KERNEL_SIZE, max_dist=MAX_DIST, ratio=RATIO, convert2lab=False))
+            saliency_fn_ = (lambda x: (my_explainer.generate_lime_explanation(input=x,
+                                                                              hide_img=False,
+                                                                              positive_only=True,
+                                                                              segmentation_fn=segmentation_fn,
+                                                                              num_samples=NUM_SAMPLES))[2])
+            test_one_approach(saliency_fn=saliency_fn_, model=model_, save_dir=save_dir_, _GAME=GAME)
+
+            # FELZENSWALB (scale, sigma, min_size, num_samples)
+            SCALE = 21
+            SIGMA = 0.5
+            MIN_SIZE = 4
+            NUM_SAMPLES = 1000
+            save_dir_ = os.path.join(dir, "Lime_felzenswalb_" + str(SCALE) + "_" + str(SIGMA) +
+                                     "_" + str(MIN_SIZE) + "_" + str(NUM_SAMPLES))
+            segmentation_fn = (
+                lambda x: seg.felzenszwalb(x, scale=SCALE, sigma=SIGMA, min_size=MIN_SIZE))
+            saliency_fn_ = (lambda x: (my_explainer.generate_lime_explanation(input=x,
+                                                                              hide_img=False,
+                                                                              positive_only=True,
+                                                                              segmentation_fn=segmentation_fn,
+                                                                              num_samples=NUM_SAMPLES))[2])
+            test_one_approach(saliency_fn=saliency_fn_, model=model_, save_dir=save_dir_, _GAME=GAME)

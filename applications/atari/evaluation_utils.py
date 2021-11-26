@@ -63,6 +63,13 @@ def calculate_aucs(arr):
     return round(np.mean(aucs), 3), round(np.std(aucs), 3)
 
 
+def calculate_z_values(array):
+    """" Calculates the standard values or z-values of an array """
+    array = array - np.mean(array)
+    array = array / np.std(array)
+    return array
+
+
 def aoc(arr):
     """
     simple Area Over the curve.
