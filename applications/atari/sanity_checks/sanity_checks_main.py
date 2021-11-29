@@ -26,6 +26,7 @@ import skimage.segmentation as seg
 
 from applications.atari.custom_atari_wrapper import atari_wrapper
 from applications.atari.explanation import explainer
+import applications.atari.used_parameters as used_params
 
 import tensorflow as tf
 import keras.backend as K
@@ -177,7 +178,6 @@ def sanity_check( game, approach, _file_name, **kwargs):
     dir_name = os.path.join("results", game)
     if not os.path.isdir(dir_name):
         os.makedirs(dir_name)
-    #file_name = "noise_" + str(BLUR) + '_' + str(RAW_DIFF) + '_' + str(RADIUS) + ".csv"
     _file_name = os.path.join(dir_name, _file_name)
 
     # create empty list to be filled later
@@ -428,69 +428,71 @@ if __name__ == '__main__':
 
     # NOISE SENSITIVITY
     APPROACH = "noise"
-    RADIUS = 4
+    RADIUS = used_params.NOISE_RADIUS
     for GAME in games:
         BLUR = False
         RAW_DIFF = False
-        file_name = APPROACH + '_' + str(BLUR) + '_' + str(RAW_DIFF) + '_' + str(RADIUS) + ".csv"
+        file_name = used_params.NOISE_NAME + "_" + str(BLUR) + '_' + str(RAW_DIFF) + ".csv"
         sanity_check(game=GAME, approach=APPROACH, _file_name=file_name, r=RADIUS, blur=BLUR, raw_diff=RAW_DIFF)
 
         BLUR = True
         RAW_DIFF = True
-        file_name = APPROACH + '_' + str(BLUR) + '_' + str(RAW_DIFF) + '_' + str(RADIUS) + ".csv"
+        file_name = used_params.NOISE_NAME + "_" + str(BLUR) + '_' + str(RAW_DIFF) + ".csv"
         sanity_check(game=GAME, approach=APPROACH, _file_name=file_name, r=RADIUS, blur=BLUR, raw_diff=RAW_DIFF)
 
         BLUR = True
         RAW_DIFF = False
-        file_name = APPROACH + '_' + str(BLUR) + '_' + str(RAW_DIFF) + '_' + str(RADIUS) + ".csv"
+        file_name = used_params.NOISE_NAME + "_" + str(BLUR) + '_' + str(RAW_DIFF) + ".csv"
         sanity_check(game=GAME, approach=APPROACH, _file_name=file_name, r=RADIUS, blur=BLUR, raw_diff=RAW_DIFF)
 
 
     ### OCCLUSION SENSITIVITY
     APPROACH = "occl"
-    PATCH_SIZE = 4
+    PATCH_SIZE = used_params.OCCL_PATCH_SIZE
+    COLOR = used_params.OCCL_COLOR
+    SOFTMAX = used_params.OCCL_SOFTMAX
     for GAME in games:
-        COLOR = 0
-        file_name = APPROACH + '_' + str(PATCH_SIZE) + '_' + str(COLOR) + ".csv"
-        sanity_check(game=GAME, approach=APPROACH, _file_name=file_name, patch_size=PATCH_SIZE, color = COLOR, use_softmax = True)
-
-        COLOR = "gray"
-        file_name = APPROACH + '_' + str(PATCH_SIZE) + '_' + str(COLOR) + ".csv"
-        sanity_check(game=GAME, approach=APPROACH, _file_name=file_name, patch_size=4, color = 0.5, use_softmax = True)
+        file_name = used_params.OCCL_NAME + ".csv"
+        sanity_check(game=GAME, approach=APPROACH, _file_name=file_name, patch_size=PATCH_SIZE, color=COLOR
+                     , use_softmax=SOFTMAX)
 
     ### RISE
     APPROACH = "rise"
+    PROBABILITY = used_params.RISE_PROBABILITY
+    MASK_SIZE = used_params.RISE_MASK_SIZE
+    NUM_MASKS = used_params.RISE_NUM_MASKS
+    SOFTMAX = used_params.RISE_SOFTMAX
     for GAME in games:
-        PROBABILITY = 0.8
-        MASK_SIZE = 18
-        NUM_MASKS = 3000
-        file_name = APPROACH + '_' + "08" + '_' + str(MASK_SIZE) + '_' + str(NUM_MASKS) + ".csv"
+        file_name = used_params.RISE_NAME + ".csv"
         sanity_check(game=GAME, approach=APPROACH, _file_name=file_name, probability = PROBABILITY,
-                     mask_size = MASK_SIZE, number_of_mask=NUM_MASKS)
-
-    ### LIME
-    APPROACH = "lime"
-    for GAME in games:
-        file_name = "Lime_slic_80_10_05_1000.csv"
-        segmentation_fn = (lambda x: seg.slic(x, n_segments=80, compactness=10, sigma=0.5))
-        sanity_check(game=GAME, approach=APPROACH, _file_name=file_name,hide_img=False, positive_only=True,
-                     segmentation_fn=segmentation_fn, num_samples = 1000)
-
-        file_name = "Lime_quickshift_1_4_0_3000"
-        segmentation_fn = (lambda x: seg.quickshift(x, kernel_size=1, max_dist=4, ratio=0, convert2lab=False))
-        sanity_check(game=GAME, approach=APPROACH, _file_name=file_name, hide_img=False, positive_only=True,
-                     segmentation_fn=segmentation_fn,  num_samples = 3000)
-
-        file_name = "Lime_felzenswalb_1_025_2_2500"
-        segmentation_fn = (
-            lambda x: seg.felzenszwalb(x, scale=1, sigma=0.25, min_size=2))
-        sanity_check(game=GAME, approach=APPROACH, _file_name=file_name, hide_img=False, positive_only=True,
-                     segmentation_fn=segmentation_fn, num_samples = 2500)
+                     mask_size = MASK_SIZE, number_of_mask=NUM_MASKS, use_softmax=SOFTMAX)
 
     ### SARFA:
     APPROACH = "sarfa"
     for GAME in games:
-        file_name = "sarfa_4_blur"
-        BLUR = True
-        RADIUS = 4
-        sanity_check(game=GAME, approach=APPROACH, _file_name=file_name, r=RADIUS, blur=BLUR)
+        file_name = used_params.SARFA_NAME + ".csv"
+        sanity_check(game=GAME, approach=APPROACH, _file_name=file_name,
+                     r=used_params.SARFA_RADIUS, blur=used_params.SARFA_BLUR)
+
+    ### LIME
+    APPROACH = "lime"
+    for GAME in games:
+        file_name = used_params.SLIC_NAME + ".csv"
+        segmentation_fn = (lambda x: seg.slic(x, n_segments=used_params.SLIC_N_SEGMENTS,
+                                              compactness=used_params.SLIC_COMPACTNESS, sigma=used_params.SLIC_SIGMA))
+        sanity_check(game=GAME, approach=APPROACH, _file_name=file_name, hide_img=False, positive_only=True,
+                     segmentation_fn=segmentation_fn, num_samples=used_params.SLIC_NUM_SAMPLES)
+
+        file_name = used_params.QUICKSHIFT_NAME + ".csv"
+        segmentation_fn = (lambda x: seg.quickshift(x, kernel_size=used_params.QUICKSHIFT_KERNEL_SIZE,
+                                                    max_dist=used_params.QUICKSHIFT_MAX_DIST,
+                                                    ratio=used_params.QUICKSHIFT_RATIO, convert2lab=False))
+        sanity_check(game=GAME, approach=APPROACH, _file_name=file_name, hide_img=False, positive_only=True,
+                     segmentation_fn=segmentation_fn,  num_samples = used_params.QUICKSHIFT_NUM_SAMPLES)
+
+        file_name = used_params.FELZ_NAME + ".csv"
+        segmentation_fn = (
+            lambda x: seg.felzenszwalb(x, scale=used_params.FELZ_SCALE, sigma=used_params.FELZ_SIGMA,
+                                       min_size=used_params.FELZ_MIN_SIZE))
+        sanity_check(game=GAME, approach=APPROACH, _file_name=file_name, hide_img=False, positive_only=True,
+                     segmentation_fn=segmentation_fn, num_samples=used_params.FELZ_NUM_SAMPLES)

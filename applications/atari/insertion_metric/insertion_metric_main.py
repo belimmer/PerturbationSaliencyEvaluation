@@ -141,10 +141,10 @@ if __name__ == '__main__':
 
 
             # RANDOM BASELINE
-            # save_dir_ = os.path.join(dir, "rnd_baseline")
-            # saliency_fn_ = random_baseline
-            # test_one_approach(saliency_fn=saliency_fn_, model=model_, save_dir=save_dir_, _GAME=GAME,
-            #                   insertion_substrate_fn= insertion_fn)
+            save_dir_ = os.path.join(dir, "rnd_baseline")
+            saliency_fn_ = random_baseline
+            test_one_approach(saliency_fn=saliency_fn_, model=model_, save_dir=save_dir_, _GAME=GAME,
+                              insertion_substrate_fn= insertion_fn)
 
             # OCCLUSION
             PATCH_SIZE = 2
@@ -238,4 +238,3 @@ if __name__ == '__main__':
                                                                               num_samples=NUM_SAMPLES))[2])
             test_one_approach(saliency_fn=saliency_fn_, model=model_, save_dir=save_dir_, _GAME=GAME,
                               insertion_substrate_fn=insertion_fn)
-            
