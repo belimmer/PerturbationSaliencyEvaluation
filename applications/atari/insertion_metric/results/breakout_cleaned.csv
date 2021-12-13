@@ -1,0 +1,6 @@
+,0,1,2,3,4,5,6,7
+Approach,occl_2_0_0,noise_3_1,sarfa_2_0,rise_0.5_8_1000_0,Lime_felzenswalb_21_0.5_4_1000,Lime_quickshift_1_2_0.0_1500,Lime_slic_200_10_0.25_2000,rnd_baseline
+random_insertion_qvals,-0.72$\pm$2.5,-1.01$\pm$3.0,-3.19$\pm$3.9,-0.97$\pm$2.7,-0.98$\pm$2.7,-0.48$\pm$4.1,-0.53$\pm$3.2,-2.21$\pm$2.9
+random_insertion_advantage,-0.42$\pm$4.7,-1.52$\pm$8.4,-0.92$\pm$8.4,0.85$\pm$6.1,-0.7$\pm$6.5,-0.54$\pm$5.4,-0.05$\pm$4.8,-0.76$\pm$5.8
+black_insertion_qvals,3.16$\pm$4.2,3.04$\pm$4.2,1.97$\pm$2.0,3.39$\pm$4.2,7.48$\pm$9.6,5.8$\pm$8.7,6.12$\pm$9.7,2.13$\pm$3.1
+black_insertion_advantage,0.02$\pm$0.5,0.19$\pm$0.6,0.53$\pm$1.1,0.29$\pm$0.6,0.24$\pm$0.6,0.24$\pm$0.4,0.71$\pm$1.4,0.07$\pm$0.2

@@ -1,0 +1,9 @@
+,Approach,mean_auc_frostbite_0_random_insertion,std_frostbite_0_random_insertion,mean_auc_frostbite_1_random_insertion,std_frostbite_1_random_insertion,mean_auc_frostbite_0_black_insertion,std_frostbite_0_black_insertion,mean_auc_frostbite_1_black_insertion,std_frostbite_1_black_insertion
+0,occl_2_0_0,0.563,1.001,0.312,1.139,5.648,3.092,0.593,0.894
+1,noise_3_1,0.833,0.988,0.384,1.22,0.584,0.232,0.199,0.175
+2,sarfa_2_0,0.73,0.995,0.204,1.226,1.534,1.631,1.219,0.931
+3,rise_0.5_8_1000_0,0.915,1.099,0.346,0.891,2.396,1.653,0.254,0.283
+4,Lime_felzenswalb_21_0.5_4_1000,0.747,0.882,0.196,0.864,2.71,2.363,0.265,0.262
+5,Lime_quickshift_1_2_0.0_1500,0.371,0.998,0.244,1.323,5.121,4.053,0.284,0.351
+6,Lime_slic_200_10_0.25_2000,0.362,1.008,0.227,1.298,3.246,2.506,0.26,0.3
+7,rnd_baseline,0.877,1.125,0.403,1.188,0.514,0.414,0.16,0.229

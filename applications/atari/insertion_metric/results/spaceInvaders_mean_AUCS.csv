@@ -1,0 +1,9 @@
+,Approach,mean_auc_spaceInvaders_0_random_insertion,std_spaceInvaders_0_random_insertion,mean_auc_spaceInvaders_1_random_insertion,std_spaceInvaders_1_random_insertion,mean_auc_spaceInvaders_0_black_insertion,std_spaceInvaders_0_black_insertion,mean_auc_spaceInvaders_1_black_insertion,std_spaceInvaders_1_black_insertion
+0,occl_2_0_0,-0.702,0.631,0.763,3.492,1.015,0.219,0.277,0.401
+1,noise_3_1,-0.605,0.558,0.826,3.409,0.731,0.077,0.259,0.264
+2,sarfa_2_0,-0.795,0.623,0.794,3.679,0.741,0.2,0.593,0.371
+3,rise_0.5_8_1000_0,-0.388,0.442,0.665,2.817,0.892,0.148,0.214,0.201
+4,Lime_felzenswalb_21_0.5_4_1000,-1.123,0.87,0.871,4.327,1.017,0.221,0.244,0.24
+5,Lime_quickshift_1_2_0.0_1500,-0.811,0.652,0.765,3.734,1.079,0.245,0.251,0.189
+6,Lime_slic_200_10_0.25_2000,-0.883,0.652,0.868,3.565,1.109,0.266,0.291,0.238
+7,rnd_baseline,-1.105,0.759,0.888,4.186,0.562,0.126,0.134,0.215
