@@ -1,0 +1,9 @@
+,Approach,mean_auc_pacman_0_random_insertion,std_pacman_0_random_insertion,mean_auc_pacman_1_random_insertion,std_pacman_1_random_insertion,mean_auc_pacman_0_black_insertion,std_pacman_0_black_insertion,mean_auc_pacman_1_black_insertion,std_pacman_1_black_insertion
+0,occl_2_0.5_0,2.98,3.497,0.443,1.763,0.315,0.212,-0.134,0.34
+1,noise_3_1,0.75,0.669,-0.029,0.848,0.659,0.769,0.154,0.346
+2,sarfa_2_1,0.996,2.195,1.124,0.956,0.625,1.306,0.227,0.378
+3,rise_0.5_8_1000_0,1.101,1.958,-0.014,1.091,1.013,1.826,0.213,0.411
+4,Lime_felzenswalb_21_0.5_4_1000,0.464,0.693,-0.426,1.179,2.834,5.258,0.64,0.691
+5,Lime_quickshift_1_2_0.0_1500,0.667,1.093,-0.436,0.964,2.492,4.71,0.939,0.48
+6,Lime_slic_200_10_0.25_2000,0.624,1.079,-0.359,1.12,2.474,4.361,0.67,0.469
+7,rnd_baseline,0.851,1.518,-0.223,1.017,0.528,0.787,0.059,0.334

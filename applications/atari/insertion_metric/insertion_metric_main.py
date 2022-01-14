@@ -149,6 +149,8 @@ if __name__ == '__main__':
             # OCCLUSION
             PATCH_SIZE = 2
             COLOR = 0
+            # for the additional experiment with gray occlusion we used:
+            # COLOR = 0.5
             SOFTMAX = 0
             save_dir_ = os.path.join(dir, "occl_" + str(PATCH_SIZE) + "_" + str(COLOR) + "_" + str(SOFTMAX))
             saliency_fn_ = (lambda x: (my_explainer.generate_occlusion_explanation(input=x, patch_size=PATCH_SIZE, color=COLOR,
@@ -167,6 +169,8 @@ if __name__ == '__main__':
             # SARFA
             RADIUS = 2
             BLUR = 0
+            # for the additional experiment with blur perturbation we used:
+            # BLUR = 1
             save_dir_ = os.path.join(dir, "sarfa_" + str(RADIUS) + "_" + str(BLUR))
             saliency_fn_ = (lambda x: my_explainer.generate_sarfa_explanation(x, r=RADIUS, blur=BLUR))
             test_one_approach(saliency_fn=saliency_fn_, model=model_, save_dir=save_dir_, _GAME=GAME,

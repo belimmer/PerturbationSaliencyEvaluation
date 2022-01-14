@@ -1,0 +1,11 @@
+\begin{tabular}{lllllllll}
+\toprule
+{} &             0 &             1 &              2 &                  3 &                               4 &                             5 &                           6 &             7 \\
+\midrule
+Approach                   &  occl_2_0.5_0 &     noise_3_1 &      sarfa_2_1 &  rise_0.5_8_1000_0 &  Lime_felzenswalb_21_0.5_4_1000 &  Lime_quickshift_1_2_0.0_1500 &  Lime_slic_200_10_0.25_2000 &  rnd_baseline \\
+random_insertion_qvals     &  0.07$\pm$0.7 &  -0.6$\pm$0.6 &  -0.75$\pm$0.7 &      -0.39$\pm$0.4 &                   -1.12$\pm$0.9 &                 -0.81$\pm$0.7 &               -0.88$\pm$0.7 &  -1.1$\pm$0.8 \\
+random_insertion_advantage &  1.04$\pm$3.5 &  0.83$\pm$3.4 &   1.02$\pm$3.7 &       0.66$\pm$2.8 &                    0.87$\pm$4.3 &                  0.76$\pm$3.7 &                0.87$\pm$3.6 &  0.89$\pm$4.2 \\
+black_insertion_qvals      &  0.48$\pm$0.2 &  0.73$\pm$0.1 &   0.66$\pm$0.2 &       0.89$\pm$0.1 &                    1.02$\pm$0.2 &                  1.08$\pm$0.2 &                1.11$\pm$0.3 &  0.56$\pm$0.1 \\
+black_insertion_advantage  &  0.12$\pm$0.3 &  0.26$\pm$0.3 &   0.44$\pm$0.4 &       0.21$\pm$0.2 &                    0.24$\pm$0.2 &                  0.25$\pm$0.2 &                0.29$\pm$0.2 &  0.13$\pm$0.2 \\
+\bottomrule
+\end{tabular}
