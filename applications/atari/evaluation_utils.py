@@ -17,6 +17,8 @@ def process_single_insertion_result(arr, use_advantage=True):
             insertion_result[i] = arr[i][og_action]
     if not use_advantage:
         insertion_result /= insertion_result[-1]
+        # used to evaluation a different kind of normalization:
+        # insertion_result = normalize(insertion_result)
     return insertion_result
 
 

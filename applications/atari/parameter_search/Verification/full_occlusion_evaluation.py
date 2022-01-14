@@ -1,6 +1,8 @@
 '''
 Module for evaluating the full parameter search for the game Pacman with fast parameter configurations of occlusion.
 This can then be used to verify which states are suited to search for good parameters.
+
+This script needs to be run from the insertion_metric folder, since the insertion results are saved there.
 '''
 
 import numpy as np
@@ -37,13 +39,13 @@ if __name__ == '__main__':
 
                     if INSERTION_COLOR == "combined":
                         dir_name_ = os.path.join(game, "random_insertion", approach)
-                        scores = load_scores(dir_name_)
+                        scores = load_scores(dir_name_, use_advantage=True)
                         dir_name_ = os.path.join(game, "black_insertion", approach)
-                        scores2 = load_scores(dir_name_)
+                        scores2 = load_scores(dir_name_, use_advantage=True)
                         scores = np.concatenate((scores,scores2), axis=0)
                     else:
                         dir_name_ = os.path.join(game, INSERTION_COLOR, approach)
-                        scores = load_scores(dir_name_)
+                        scores = load_scores(dir_name_, use_advantage=True)
                     print(approach)
                     mean, std = calculate_aucs(scores)
 
