@@ -13,6 +13,8 @@ import matplotlib.pyplot as plt
 import pandas as pd
 import seaborn as sns
 
+import applications.atari.used_parameters as used_parameters
+
 
 def show_and_save_plt(ax ,file_name, y_label=None, ylim =None, label_size = 18, tick_size = 14, only_plot= False):
     """
@@ -162,55 +164,51 @@ if __name__ == '__main__':
 
     games = ["pacman", "breakout", "spaceInvaders", "frostbite"]
 
-    APPROACH = "occl"
-    PATCH_SIZE = 4
-    COLOR = 0
-    file_name = APPROACH + '_' + str(PATCH_SIZE) + '_' + str(COLOR) + ".csv"
+    file_name = used_parameters.OCCL_NAME + ".csv"
     plot_combined_results(file_name, games, file_name.replace(".csv", ""))
-
     combined_df = add_approach(file_name, approach_name="Occlusion Sensitivity", games=games)
 
-    APPROACH = "rise"
-    MASK_SIZE = 18
-    NUM_MASKS = 3000
-    file_name = APPROACH + '_' + "08" + '_' + str(MASK_SIZE) + '_' + str(NUM_MASKS) + ".csv"
+    BLUR = True
+    RAW_DIFF = True
+    file_name = used_parameters.NOISE_NAME + "_" + str(BLUR) + '_' + str(RAW_DIFF) + ".csv"
     plot_combined_results(file_name, games, file_name.replace(".csv", ""))
-    combined_df = add_approach(file_name, approach_name="RISE", games=games, df=combined_df)
+    combined_df = add_approach(file_name, approach_name="NS Chosen Action", games=games, df=combined_df)
 
-    # file_name = "Lime_slic_80_10_05_1000.csv"
-    # plot_combined_results(file_name, games, file_name.replace(".csv", ""))
-    # combined_df = add_approach(file_name, approach_name="LIME", games=games, df=combined_df)
-
-    file_name = "Lime_quickshift_1_4_0_3000"
-    plot_combined_results(file_name, games, file_name.replace(".csv", ""))
-    combined_df = add_approach(file_name, approach_name="LIME", games=games, df=combined_df)
-
-    # file_name = "Lime_felzenswalb_1_025_2_2500"
-    # plot_combined_results(file_name, games, file_name.replace(".csv", ""))
-    # combined_df = add_approach(file_name, approach_name="LIME felz", games=games, df=combined_df)
-
-    APPROACH = "noise"
-    RADIUS = 4
     BLUR = True
     RAW_DIFF = False
-    file_name = APPROACH + '_' + str(BLUR) + '_' + str(RAW_DIFF) + '_' + str(RADIUS) + ".csv"
+    file_name = used_parameters.NOISE_NAME + "_" + str(BLUR) + '_' + str(RAW_DIFF) + ".csv"
     plot_combined_results(file_name, games, file_name.replace(".csv", ""))
     combined_df = add_approach(file_name, approach_name="NS Original", games=games, df=combined_df)
 
     BLUR = False
     RAW_DIFF = False
-    file_name = APPROACH + '_' + str(BLUR) + '_' + str(RAW_DIFF) + '_' + str(RADIUS) + ".csv"
+    file_name = used_parameters.NOISE_NAME + "_" + str(BLUR) + '_' + str(RAW_DIFF) + ".csv"
     plot_combined_results(file_name, games, file_name.replace(".csv", ""))
     combined_df = add_approach(file_name, approach_name="NS Black", games=games, df=combined_df)
 
-    BLUR = True
-    RAW_DIFF = True
-    file_name = APPROACH + '_' + str(BLUR) + '_' + str(RAW_DIFF) + '_' + str(RADIUS) + ".csv"
+    file_name = used_parameters.RISE_NAME + ".csv"
     plot_combined_results(file_name, games, file_name.replace(".csv", ""))
-    combined_df = add_approach(file_name, approach_name="NS Chosen Action", games=games, df=combined_df)
+    combined_df = add_approach(file_name, approach_name="RISE", games=games, df=combined_df)
+
+    file_name = used_parameters.SARFA_NAME + ".csv"
+    plot_combined_results(file_name, games, file_name.replace(".csv", ""))
+    combined_df = add_approach(file_name, approach_name="SARFA", games=games, df=combined_df)
+
+    file_name = used_parameters.SLIC_NAME + ".csv"
+    plot_combined_results(file_name, games, file_name.replace(".csv", ""))
+    combined_df = add_approach(file_name, approach_name="LIME SLIC", games=games, df=combined_df)
+
+    file_name = used_parameters.QUICKSHIFT_NAME + ".csv"
+    plot_combined_results(file_name, games, file_name.replace(".csv", ""))
+    combined_df = add_approach(file_name, approach_name="LIME Quick", games=games, df=combined_df)
+
+    file_name = used_parameters.FELZ_NAME + ".csv"
+    plot_combined_results(file_name, games, file_name.replace(".csv", ""))
+    combined_df = add_approach(file_name, approach_name="LIME Felz", games=games, df=combined_df)
 
     directory = "combined"
-    plot_params = {"ci": 99, "err_style": "band", "markers": True, "markersize" : 10, "legend":False}
+    markers =  ('o', 'v', '^', '>', 'X', 'P', 's', 'p', 'D') #, 'h', 'H', 'D', 'd', 'P', 'X')
+    plot_params = {"ci": 99, "err_style": "band", "markers": markers, "markersize" : 10, "legend":False, "dashes" : False}
     ax = sns.lineplot(x='rand_layer', y='pearson', hue="approach", style="approach", data=combined_df, **plot_params)
     show_and_save_plt(ax, os.path.join(directory, 'pearson'), label_size=28, tick_size=40, y_label='Pearson',
                      ylim=(0, 1), only_plot=True)
@@ -230,8 +228,8 @@ if __name__ == '__main__':
     handles = ax.get_legend_handles_labels()
     handles[0].pop(0)
     handles[1].pop(0)
-    fig = plt.figure(figsize=(9.2,0.4))
-    fig.legend(handles[0],handles[1], loc="upper left", frameon=True, ncol= len(handles[0]))
+    fig = plt.figure(figsize=(7.8, 0.6))
+    fig.legend(handles[0],handles[1], loc="upper left", frameon=True, ncol= 5)
     plt.savefig(fname=os.path.join("figures","sanity_legend.png"))
     plt.show()
 
