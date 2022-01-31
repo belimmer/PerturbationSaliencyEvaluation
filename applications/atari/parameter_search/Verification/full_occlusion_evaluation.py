@@ -1,5 +1,5 @@
 '''
-Module for evaluating the full parameter search for the game Pacman with fast parameter configurations of occlusion.
+Module for evaluating the full parameter search conducted by full_occlusion_search.py for the game Pacman with fast parameter configurations of occlusion.
 This can then be used to verify which states are suited to search for good parameters.
 
 This script needs to be run from the insertion_metric folder, since the insertion results are saved there.

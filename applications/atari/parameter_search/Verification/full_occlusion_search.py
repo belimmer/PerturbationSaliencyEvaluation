@@ -1,6 +1,9 @@
 """
 Module for doing a full parameter search for 1000 states of the game Pacman with fast parameter configurations of occlusion.
 This can then be used to verify which states are suited to search for good parameters.
+
+This script needs to be run from the insertion_metric folder, since the insertion results are saved there.
+These results are then processed by full_occlusion_evaluation.py.
 """
 
 from applications.atari.explanation import explainer

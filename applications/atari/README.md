@@ -1,27 +1,49 @@
 ﻿# Atari (Deep Reinforcement Learning agents)
 
 This subfolder contains the code to run our experiments on four different reinforcement learning agents (Breakout, Pac-Man, Space Invaders, and Frostbite). 
-It also contains our implementation of the 4 different perturbation-based XAI approaches. 
+It also contains our implementation of the 5 different perturbation-based XAI approaches. 
 
 # How to replicate our experiments:
 ## HIGHLIGHT State Selection:
-To find HIGHLIGHT states you have to run *`highlights_stream_generator`*, which generates a *stream* folder that contains a stream of states for the agent you specified within *`highlights_stream_generator`*.
-Afterward, you can use *`highlights_state_selection`* to find the HIGHLIGHT states within this stream according to the HIGHLIGHT-DIV algorithm(https://scholar.harvard.edu/files/oamir/files/highlightsmain.pdf).
-We committed the HIGHLIGHT states that we used during our experiments in *`HIGHLIGHTS_states`*.
+To find HIGHLIGHT states you have to run *`highlights_stream_generator.py`*, which generates a *stream* folder that contains a stream of states for the agent you specified within *`highlights_stream_generator.py`*.
+Afterward, you can use *`highlights_state_selection.py`* to find the HIGHLIGHT states within this stream according to the HIGHLIGHT-DIV algorithm(https://scholar.harvard.edu/files/oamir/files/highlightsmain.pdf).
+We committed the HIGHLIGHT states that we used for our generated saliency map images in *`HIGHLIGHTS_states`*.
 
 ## Parameter Tuning:
-To find suiting parameter ranges for the different segmentation algorithms we used *`segmentation_test.py`* to visually inspect different segmentation.
-After that, you can use *`parameter_test.py`* to calculate which parameter combination for the saliency map approach that you specified within the script achieves the highest insertion metric score across the states in *`HIGHLIGHTS_states`*.
-The results are saved in *`parameter_results`* and we committed our results there.
+The directory *`parameter_search`* contains the modules we used for finding parameters that work well for each saliency approach.
 
-## Insertion Metric and Run-time Testing:
-Run *`insertion_metric/insertion_metric_main.py`* to calculate the insertion metric and run-time for 1000 states of each game for all the saliency map approaches.
-The results are saved in *`insertion_metric/results`*.
-Then you can use *`insertion_metric/insertion_metric_plot.py`* to plot the results and save the figures in *`insertion_metric/figures`*. 
-We committed our results and figures in the corresponding folders.
-*`insertion_metric/times.py`* calculates the mean run-time per saliency based on the results in *`insertion_metric/results`*.
+- The subfolder *`parameter_search/Verification`* deals with finding the most suitable variants of the insertion metric. 
+*`full_occllusion_search.py`* calculates the insertion metric for a full stream of 1000 saliency maps created by 26 different occlusion sensitivity parameter combinations.
+The raw results are saved under *`insertion_metric/results/pacman`*.
+*`full_occlusion_evaluation.py`* processes and combines those raw results, calculating a mean and standard deviation value for each parameter combination.
+These processed results are saved under *`parameter_search/Verification/occlusion_results_...`*, where the last term describes how the single insertion metric results were processed.
+This allows us to choose the normalization methods that result in the lowest standard deviation.
+
+- *`parameter_search/Verification`* also contains several subsets of states of the pacman agent which were either randomly selected by *`select_random_states.py`* or chosen the HIGHLIGHTS modules mentioned above.
+We used *`highlights_occlusion_search.py`*, to run insertion metric evaluations on those subsets for the aforementioned 26 different occlusion sensitivity parameters.
+The raw results are saved under *`parameter_results`* in the subfolder of each state subset. 
+Now *`highlights_occlusion_evaluation.py`* is used to process and combine the raw results for each of those subfolders analogously to *`full_occlusion_evaluation.py`*.
+In addition, *`highlights_occlusion_evaluation.py`* calculates the correlation of the parameter rankings defined by the processed results of each state subset with the rating based on the full results obtained by *`full_occlusion_evaluation.py`*.
+The correlation results are saved under *`correlation_values_....csv`* and are used to determine which state subset is best suited to represent the full stream in a parameter search.
+ 
+- After finding suitable variants of the insertion metric and a state subset that represents the full stream in the subdirectory *`parameter_search/Verification`*, we used *`parameter_search/parameter_test.py`* to test a wide variety of parameters for all saliency map approaches.
+The raw results are saved under *`parameter_search/paramter_results`* as *`best_parameters_black.npy`* and *`best_parameters_random.npy`*.
+*`parameter_search/parameter_test_combiner`* processes and combines those results in readable .csv files.
+The final combined ranking of the parameter combinations is contained in *`final_parameters_results.csv`*.
+
+## Insertion Metric:
+
+The directory *`insertion_metric`* contains the scripts and results for our insertion metric tests.
+Run *`insertion_metric/insertion_metric_main.py`* to calculate the insertion metric for 1000 states of each game for all saliency map approaches.
+The raw results are saved in *`insertion_metric/results`*.
+Then you can use *`insertion_metric/insertion_metric_plot.py`* to process and combine the raw insertion metric results.
+These results are saved in  *`insertion_metric/results`* under *`pacman_mean_AUCS.csv`* for instance.
+To make those results more readable, we used *`readable_table.py`*.
+The resulting data frames (e.g. *`pacman_cleaned.csv`*) are saved in  *`insertion_metric/results`*.
+Our final results are also committed there.
 
 ## Sanity Checks:
+The directory *`sanity_checks`* contains the scripts and results for the sanity checks (https://arxiv.org/abs/1810.03292).
 Run *`sanity_checks/sanity_checks_main.py`* to run the sanity check on 1000 states of each game for all the saliency map approaches.
 The results are saved in *`sanity_checks/results`*.
 Then you can use *`sanity_checks/sanity_checks_plot.py`* to plot the results and save the figures in *`sanity_checks/figures`*. 
@@ -52,29 +74,20 @@ For MsPacman the adjustment looked like this (for the other agents just replace 
            return reward/10
    ```
 
-# Short Description of each component
-- *`models`* contains the trained models
-- *`custum_atari_wrapper`* contains our simplified implementation of the OpenAI Atari wrapper
+# Other Scripts
 
+## Saliency map generation methods
+- *`explanation.py`* mainly contains the explainer class which is used to generate the different perturbation based saliency maps
 - *`custom_lime.py`* contains our implementation of the LIME approach (https://arxiv.org/abs/1602.04938, https://github.com/marcotcr/lime)
 - *`custom_occlusion_sensitivity.py`* contains our implementation of the occlusion sensitivity approach (https://arxiv.org/abs/1311.2901, https://github.com/sicara/tf-explain).
 - *`greydanus.py`* contains our implementation of the noise sensitivity approach (https://arxiv.org/abs/1711.00138, https://github.com/greydanus/visualize_atari), with the original perturbation (i.e. the image is perturbed with a gaussian blur)
 - *`custom_greydanus.py`* contains the implementation of our adjustments to the Noise Sensitivity approach (https://arxiv.org/abs/1711.00138, https://github.com/greydanus/visualize_atari), where the image is perturbed with circles of black color instead of noise.
 - *`rise.py`* contains our implementation of the RISE approach and the implementation of the insertion metric (https://arxiv.org/abs/1806.07421, https://github.com/eclique/RISE)
-- *`explanation.py`* mainly contains the explainer class which is used to generate the different perturbation based saliency maps
-
-- *`highlights_stream_generator`* creates a stream of gameplay states for a given agent, which is used to identify HIGHLIGHT states
-- *`highlights_state_selection`* contains code to select highlight game states(https://scholar.harvard.edu/files/oamir/files/highlightsmain.pdf, https://github.com/HuTobias/HIGHLIGHTS-LRP) from the stream generated by *`highlights_stream_generator`*
-- *`HIGHLIGHTS_states`* contains example game states, selected by the HIGHLIGHTS-DIV algorithm (https://scholar.harvard.edu/files/oamir/files/highlightsmain.pdf). These game states are used for the parameter tests and to generate example saliency maps.
-- *`ImageGeneration.py`* generates example saliency maps for the highlight states in *`HIGHLIGHTS_states`*
-- *`output_highlight_states`* contains the example saliency maps created by *`ImageGeneration.py`*
-
-- *`segmentation_test.py`* is used for visually testing LIME with different segmentation algorithms
-- *`parameter_test.py`* runs insertion  tests on the HIGHLIGHT images in *`HIGHLIGHTS_states`* to find the best parameters for each approach
-- *`parameter_results`* contains the results obtained by *`parameter_test.py`*
+- *`sarfa.py`* contains our implementation of the SARFA approach (https://arxiv.org/abs/1912.12191, https://github.com/nikaashpuri/sarfa-saliency)
 
 
-- *`insertion_metric`* contains the scripts and results for the insertion metric tests
-
-- *`sanity_checks`* contains the scripts and results for the sanity checks (https://arxiv.org/abs/1810.03292)
-
+## Assorted
+- *`custum_atari_wrapper.py`* contains our simplified implementation of the OpenAI Atari wrapper.
+- *`evaluation_utils.py`* contains utility functions used for evaluating our results.
+- *`used_parameters.py`* stores the saliency map parameters which we used in our final sanity checks (*`sanity_checks/sanity_checks_main.py`*), image generation (*`ImageGeneration.py`*) and insertion metric experiments (*`insertion_metric/insertion_metric_main.py`*, even though we still manually inserted the parameters there). 
+To keep the runtime reasonable (1 Week for the insertion metric and the sanity checks each), we used the best parameters for each saliency approach that needed less than 3 seconds for a single saliency map.

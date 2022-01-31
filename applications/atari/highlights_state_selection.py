@@ -351,7 +351,7 @@ if __name__ == '__main__':
     # *inverse* parameter of *compute_state_importance* and the *highlights_diverse_importance* function from the comment below
     # summary_states, summary_states_with_context = highlights_diverse_importance(state_features_importance_df, 10, 10)
 
-    # for breakout we used:
+    # for the displayed states for breakout we used:
     # summary_states, summary_states_with_context = highlights_div(state_features_importance_df, 5, 10, 10,
     #                                                             percentile_threshold=75)
     print('div:', summary_states)

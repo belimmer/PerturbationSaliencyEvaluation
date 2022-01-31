@@ -9,7 +9,7 @@ This module implements sanity checks for saliency maps.
 To this end the layers in the model are cascadingly randomized and for each step we create a copy of the model.
 Then we create gameplay and saliency map streams for each of those models, using the decisions of the original model,
  such that all models get the same input states.
-Finally we compare the generated saliency of all models.
+Finally we compare the generated saliency maps of all models.
 '''
 
 import numpy as np

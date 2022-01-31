@@ -1,4 +1,4 @@
-""" Module for combining the results from different insertion metrics."""
+""" Module for combining the results from different insertion metrics (Black vs. random and Advantage vs. Q-value."""
 
 import numpy as np
 import os
