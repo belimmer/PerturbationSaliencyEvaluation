@@ -30,6 +30,10 @@ def cross_entropy(original_output, perturbed_output, action_index):
     new_p = np.append(new_p, perturbed_output[action_index + 1:])
     new_p = softmax(new_p)
 
+    # According to the paper this should be the other way around: entropy(new_p,p)
+    # (directly und er equation (2) in https://arxiv.org/pdf/1912.12191.pdf)
+    # While this would make a difference, it is like this in the official implementation in
+    # github.com/nikaashpuri/sarfa-saliency/blob/master/visualize_atari/saliency.py:
     KL = entropy(p, new_p)
 
     K = 1. / (1. + KL)
