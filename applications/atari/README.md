@@ -13,14 +13,14 @@ We committed the HIGHLIGHT states that we used for our generated saliency map im
 The directory *`parameter_search`* contains the modules we used for finding parameters that work well for each saliency approach.
 
 - The subfolder *`parameter_search/Verification`* deals with finding the most suitable variants of the insertion metric. 
-*`full_occllusion_search.py`* calculates the insertion metric for a full stream of 1000 saliency maps created by 26 different occlusion sensitivity parameter combinations.
+*`full_occllusion_search.py`* calculates the insertion metric for a full stream of 1000 saliency maps created by 28 different occlusion sensitivity parameter combinations.
 The raw results are saved under *`insertion_metric/results/pacman`*.
 *`full_occlusion_evaluation.py`* processes and combines those raw results, calculating a mean and standard deviation value for each parameter combination.
 These processed results are saved under *`parameter_search/Verification/occlusion_results_...`*, where the last term describes how the single insertion metric results were processed.
 This allows us to choose the normalization methods that result in the lowest standard deviation.
 
 - *`parameter_search/Verification`* also contains several subsets of states of the pacman agent which were either randomly selected by *`select_random_states.py`* or chosen the HIGHLIGHTS modules mentioned above.
-We used *`highlights_occlusion_search.py`*, to run insertion metric evaluations on those subsets for the aforementioned 26 different occlusion sensitivity parameters.
+We used *`highlights_occlusion_search.py`*, to run insertion metric evaluations on those subsets for the aforementioned 28 different occlusion sensitivity parameters.
 The raw results are saved under *`parameter_results`* in the subfolder of each state subset. 
 Now *`highlights_occlusion_evaluation.py`* is used to process and combine the raw results for each of those subfolders analogously to *`full_occlusion_evaluation.py`*.
 In addition, *`highlights_occlusion_evaluation.py`* calculates the correlation of the parameter rankings defined by the processed results of each state subset with the rating based on the full results obtained by *`full_occlusion_evaluation.py`*.
@@ -87,6 +87,7 @@ For MsPacman the adjustment looked like this (for the other agents just replace 
 
 
 ## Assorted
+- *`segmentation_test.py`* is used for visually testing LIME with different segmentation algorithms. This was used to find parameter ranges for the parameter search.
 - *`custum_atari_wrapper.py`* contains our simplified implementation of the OpenAI Atari wrapper.
 - *`evaluation_utils.py`* contains utility functions used for evaluating our results.
 - *`used_parameters.py`* stores the saliency map parameters which we used in our final sanity checks (*`sanity_checks/sanity_checks_main.py`*), image generation (*`ImageGeneration.py`*) and insertion metric experiments (*`insertion_metric/insertion_metric_main.py`*, even though we still manually inserted the parameters there). 
