@@ -62,7 +62,7 @@ def show_and_save_plt(ax ,file_name, y_label=None, ylim =None, label_size = 18, 
         os.makedirs(file_name)
         os.rmdir(file_name)
     plt.tight_layout()
-    plt.savefig(file_name)
+    plt.savefig(file_name, dpi=300)
 
     plt.show()
 
@@ -230,44 +230,44 @@ if __name__ == '__main__':
     handles[1].pop(0)
     fig = plt.figure(figsize=(7.8, 0.6))
     fig.legend(handles[0],handles[1], loc="upper left", frameon=True, ncol= 5)
-    plt.savefig(fname=os.path.join("figures","sanity_legend.png"))
+    plt.savefig(fname=os.path.join("figures","sanity_legend.png"), dpi=300)
     plt.show()
 
 
     ## LIME results
-    file_name = "Lime_slic_80_10_05_1000.csv"
-    plot_combined_results(file_name, games, file_name.replace(".csv", ""))
-    combined_df = add_approach(file_name, approach_name="LIME SLIC", games=games)
-    file_name = "Lime_quickshift_1_4_0_3000"
-    plot_combined_results(file_name, games, file_name.replace(".csv", ""))
-    combined_df = add_approach(file_name, approach_name="LIME Quickshift", games=games, df=combined_df)
-
-    file_name = "Lime_felzenswalb_1_025_2_2500"
-    plot_combined_results(file_name, games, file_name.replace(".csv", ""))
-    combined_df = add_approach(file_name, approach_name="LIME Felzenszwalb", games=games, df=combined_df)
-
-    directory = "combined_LIME"
-    plot_params = {"ci": 99, "err_style": "band", "markers": True, "markersize": 10, "legend": False}
-    ax = sns.lineplot(x='rand_layer', y='pearson', hue="approach", style="approach", data=combined_df, **plot_params)
-    show_and_save_plt(ax, os.path.join(directory, 'pearson'), label_size=28, tick_size=40, y_label='Pearson',
-                      ylim=(0, 1), only_plot=True)
-
-    ax = sns.lineplot(x='rand_layer', y='spearman', hue="approach", style="approach", data=combined_df, **plot_params)
-    show_and_save_plt(ax, os.path.join(directory, 'spearman'), label_size=28, tick_size=40, y_label='Spearman',
-                      ylim=(0, 1), only_plot=True)
-
-    ax = sns.lineplot(x='rand_layer', y='ssim', hue="approach", style="approach", data=combined_df, **plot_params)
-    show_and_save_plt(ax, os.path.join(directory, 'ssim'), label_size=28, tick_size=40, y_label='SSIM',
-                      ylim=(0, 1), only_plot=True)
-
-    # draw the legend
-    plot_params["legend"] = "full"
-    ax = sns.lineplot(x='rand_layer', y='ssim', hue="approach", style="approach", data=combined_df, **plot_params)
-
-    handles = ax.get_legend_handles_labels()
-    handles[0].pop(0)
-    handles[1].pop(0)
-    fig = plt.figure(figsize=(5.3, 0.4))
-    fig.legend(handles[0], handles[1], loc="upper left", frameon=True, ncol=len(handles[0]))
-    plt.savefig(fname=os.path.join("figures", "lime_sanity_legend.png"))
-    plt.show()
+    # file_name = "Lime_slic_80_10_05_1000.csv"
+    # plot_combined_results(file_name, games, file_name.replace(".csv", ""))
+    # combined_df = add_approach(file_name, approach_name="LIME SLIC", games=games)
+    # file_name = "Lime_quickshift_1_4_0_3000"
+    # plot_combined_results(file_name, games, file_name.replace(".csv", ""))
+    # combined_df = add_approach(file_name, approach_name="LIME Quickshift", games=games, df=combined_df)
+    #
+    # file_name = "Lime_felzenswalb_1_025_2_2500"
+    # plot_combined_results(file_name, games, file_name.replace(".csv", ""))
+    # combined_df = add_approach(file_name, approach_name="LIME Felzenszwalb", games=games, df=combined_df)
+    #
+    # directory = "combined_LIME"
+    # plot_params = {"ci": 99, "err_style": "band", "markers": True, "markersize": 10, "legend": False}
+    # ax = sns.lineplot(x='rand_layer', y='pearson', hue="approach", style="approach", data=combined_df, **plot_params)
+    # show_and_save_plt(ax, os.path.join(directory, 'pearson'), label_size=28, tick_size=40, y_label='Pearson',
+    #                   ylim=(0, 1), only_plot=True)
+    #
+    # ax = sns.lineplot(x='rand_layer', y='spearman', hue="approach", style="approach", data=combined_df, **plot_params)
+    # show_and_save_plt(ax, os.path.join(directory, 'spearman'), label_size=28, tick_size=40, y_label='Spearman',
+    #                   ylim=(0, 1), only_plot=True)
+    #
+    # ax = sns.lineplot(x='rand_layer', y='ssim', hue="approach", style="approach", data=combined_df, **plot_params)
+    # show_and_save_plt(ax, os.path.join(directory, 'ssim'), label_size=28, tick_size=40, y_label='SSIM',
+    #                   ylim=(0, 1), only_plot=True)
+    #
+    # # draw the legend
+    # plot_params["legend"] = "full"
+    # ax = sns.lineplot(x='rand_layer', y='ssim', hue="approach", style="approach", data=combined_df, **plot_params)
+    #
+    # handles = ax.get_legend_handles_labels()
+    # handles[0].pop(0)
+    # handles[1].pop(0)
+    # fig = plt.figure(figsize=(5.3, 0.4))
+    # fig.legend(handles[0], handles[1], loc="upper left", frameon=True, ncol=len(handles[0]))
+    # plt.savefig(fname=os.path.join("figures", "lime_sanity_legend.png"))
+    # plt.show()
